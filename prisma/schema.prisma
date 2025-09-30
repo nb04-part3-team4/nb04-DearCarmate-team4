@@ -1,0 +1,168 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 회사
+model Company {
+  id          Int      @id @default(autoincrement())
+  name        String
+  companyCode String   @unique @map("company_code")
+  address     String?
+  phone       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  users     User[]
+  cars      Car[]
+  customers Customer[]
+  contracts Contract[]
+
+  @@map("companies")
+}
+
+// 유저
+model User {
+  id             Int      @id @default(autoincrement())
+  email          String   @unique
+  password       String
+  name           String
+  employeeNumber String   @unique @map("employee_number")
+  phoneNumber    String?  @map("phone_number")
+  imageUrl       String?  @map("image_url")
+  isAdmin        Boolean  @default(false) @map("is_admin")
+  companyId      Int      @map("company_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contracts Contract[]
+
+  @@map("users")
+}
+
+// 차량
+model Car {
+  id                Int      @id @default(autoincrement())
+  modelId           Int      @map("model_id")
+  carNumber         String   @unique @map("car_number")
+  manufacturingYear Int      @map("manufacturing_year")
+  mileage           Int      @default(0)
+  price             Int
+  accidentCount     Int      @default(0) @map("accident_count")
+  explanation       String?
+  accidentDetails   String?  @map("accident_details")
+  status            String   @default("possession") // possession, contractProceeding, contractCompleted
+  imageUrl          String?  @map("image_url")
+  companyId         Int      @map("company_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  model     CarModel   @relation(fields: [modelId], references: [id])
+  contracts Contract[]
+
+  @@map("cars")
+}
+
+// 차량 모델
+model CarModel {
+  id           Int    @id @default(autoincrement())
+  manufacturer String
+  model        String
+  type         String // SEDAN, SUV, TRUCK, etc.
+
+  cars Car[]
+
+  @@unique([manufacturer, model])
+  @@map("car_models")
+}
+
+// 고객
+model Customer {
+  id          Int      @id @default(autoincrement())
+  name        String
+  gender      String // male, female
+  phoneNumber String   @map("phone_number")
+  ageGroup    String   @map("age_group") // 10대, 20대, 30대, 40대, 50대, 60대, 70대, 80대
+  region      String // 서울, 경기, 인천, 강원, 충북, 충남, 세종, 대전, 전북, 전남, 광주, 경북, 경남, 대구, 울산, 부산, 제주
+  email       String?
+  memo        String?
+  companyId   Int      @map("company_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contracts Contract[]
+
+  @@map("customers")
+}
+
+// 계약
+model Contract {
+  id             Int       @id @default(autoincrement())
+  carId          Int       @map("car_id")
+  customerId     Int       @map("customer_id")
+  userId         Int       @map("user_id")
+  companyId      Int       @map("company_id")
+  contractName   String    @map("contract_name")
+  status         String    @default("carInspection") // carInspection
+  resolutionDate DateTime? @map("resolution_date")
+  contractPrice  Int       @map("contract_price")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  company   Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  car       Car                @relation(fields: [carId], references: [id])
+  customer  Customer           @relation(fields: [customerId], references: [id])
+  user      User               @relation(fields: [userId], references: [id])
+  meetings  Meeting[]
+  documents ContractDocument[]
+
+  @@map("contracts")
+}
+
+// 미팅
+model Meeting {
+  id         Int      @id @default(autoincrement())
+  contractId Int      @map("contract_id")
+  date       DateTime
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  alarms   Alarm[]
+
+  @@map("meetings")
+}
+
+// 알람
+model Alarm {
+  id        Int      @id @default(autoincrement())
+  meetingId Int      @map("meeting_id")
+  alarmTime DateTime @map("alarm_time")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@map("alarms")
+}
+
+// 계약서
+model ContractDocument {
+  id         Int      @id @default(autoincrement())
+  contractId Int      @map("contract_id")
+  fileName   String   @map("file_name")
+  fileUrl    String?  @map("file_url")
+  fileSize   Int?     @map("file_size")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@map("contract_documents")
+}
