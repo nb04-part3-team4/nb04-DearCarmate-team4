@@ -1,17 +1,62 @@
 ## 💡 프로젝트 주제 - Dear Carmate
 
+렌터카 관리 시스템 백엔드 API 서버
+
 - [[프로젝트가이드]](https://www.notion.so/bec107dd4ac04d3f910900303cdfd8c9?pvs=21)
 - [[API명세서]](https://www.notion.so/f18aa80a25a54555b25b08652c36763a?pvs=21)
 
-## ⚙️ 기술 스택 및 협업 도구
+---
 
-| **분류** | **사용 예정 도구** |
+## 🚀 초기 세팅 완료 항목
+
+### 1. 개발 환경 설정
+- ✅ Node.js + TypeScript 프로젝트 초기화
+- ✅ Express.js 설치
+- ✅ PostgreSQL 연동 준비
+
+### 2. 코드 품질 도구
+- ✅ ESLint 설정 (TypeScript)
+- ✅ Prettier 설정
+- ✅ Husky + lint-staged (pre-commit hook)
+  - 커밋 전 자동으로 `eslint --fix`, `prettier --write`, `tsc --noEmit` 실행
+
+### 3. 데이터베이스
+- ✅ Prisma ORM 설정
+- ✅ Database Schema 설계 완료 (9개 모델)
+  - Company, User, CarModel, Car, Customer, Contract, Meeting, Alarm, ContractDocument
+- ✅ ERD 문서화
+
+### 4. 프로젝트 구조
+- ✅ Layered Architecture 기본 폴더 구조
+  ```
+  src/
+  ├── controllers/
+  ├── services/
+  ├── repositories/
+  ├── models/
+  ├── types/
+  └── utils/
+  ```
+
+### 5. 테스트 환경
+- ✅ Vitest 설치 및 설정
+
+---
+
+## ⚙️ 기술 스택
+
+| **분류** | **기술** |
 | --- | --- |
-| Backend | Node.js (Express) |
-| Database | Postgresql |
-| API 문서화 | Swagger |
+| Runtime | Node.js |
+| Language | TypeScript |
+| Framework | Express.js |
+| Database | PostgreSQL |
+| ORM | Prisma |
+| Validation | Zod |
+| Test | Vitest |
+| Code Quality | ESLint, Prettier, Husky |
+| API 문서화 | Swagger (예정) |
 | 협업 도구 | Discord, GitHub, Notion |
-| 일정 관리 | GitHub Issues + Notion 타임라인 |
 
 # 🧩 규칙 수립
 
@@ -95,7 +140,7 @@ erDiagram
     Meeting ||--o{ Alarm : "notifies"
 
     Company {
-        uuid id PK
+        int id PK
         string name
         string company_code UK
         string address
@@ -105,7 +150,7 @@ erDiagram
     }
 
     User {
-        uuid id PK
+        int id PK
         string email UK
         string password
         string name
@@ -113,23 +158,23 @@ erDiagram
         string phone_number
         string image_url
         boolean is_admin
-        uuid company_id FK
+        int company_id FK
         datetime created_at
         datetime updated_at
     }
 
     CarModel {
-        uuid id PK
+        int id PK
         string manufacturer
-        string model_name
+        string model
         string type "SEDAN, SUV, TRUCK, 경소형, 준중중형, 대형, 스포츠카"
     }
 
     Car {
-        uuid id PK
-        uuid model_id FK
+        int id PK
+        int model_id FK
         string car_number UK
-        int year
+        int manufacturing_year
         int mileage
         int price
         int accident_count
@@ -137,13 +182,13 @@ erDiagram
         string accident_details
         string status "possession, contractProceeding, contractCompleted"
         string image_url
-        uuid company_id FK
+        int company_id FK
         datetime created_at
         datetime updated_at
     }
 
     Customer {
-        uuid id PK
+        int id PK
         string name
         string gender "male, female"
         string phone_number
@@ -151,17 +196,17 @@ erDiagram
         string region "서울, 경기, 인천..."
         string email
         string memo
-        uuid company_id FK
+        int company_id FK
         datetime created_at
         datetime updated_at
     }
 
     Contract {
-        uuid id PK
-        uuid car_id FK
-        uuid customer_id FK
-        uuid user_id FK
-        uuid company_id FK
+        int id PK
+        int car_id FK
+        int customer_id FK
+        int user_id FK
+        int company_id FK
         string contract_name
         string status "carInspection"
         datetime resolution_date
@@ -171,23 +216,23 @@ erDiagram
     }
 
     Meeting {
-        uuid id PK
-        uuid contract_id FK
+        int id PK
+        int contract_id FK
         datetime date
         datetime created_at
         datetime updated_at
     }
 
     Alarm {
-        uuid id PK
-        uuid meeting_id FK
+        int id PK
+        int meeting_id FK
         datetime alarm_time
         datetime created_at
     }
 
     ContractDocument {
-        uuid id PK
-        uuid contract_id FK
+        int id PK
+        int contract_id FK
         string file_name
         string file_url
         int file_size
@@ -213,12 +258,12 @@ erDiagram
 차량 모델 정보를 관리하는 마스터 테이블입니다.
 - **타입**: SEDAN, SUV, TRUCK, 경·소형, 준중·중형, 대형, 스포츠카 등
 - **관계**: Car와 1:N 관계
-- **제약조건**: (manufacturer, modelName) 조합으로 유니크 제약
+- **제약조건**: (manufacturer, model) 조합으로 유니크 제약
 
 ### Car (차량)
 실제 보유 차량 정보를 관리하는 테이블입니다.
 - **상태**: possession (보유), contractProceeding (계약 진행 중), contractCompleted (계약 완료)
-- **필수 필드**: carNumber (차량 번호, 유니크), price (가격), year (제조년도)
+- **필수 필드**: carNumber (차량 번호, 유니크), price (가격), manufacturingYear (제조년도)
 - **사고 정보**: accidentCount (사고 횟수), accidentDetails (사고 상세)
 - **관계**: Company, CarModel과 N:1 관계, Contract와 1:N 관계
 
@@ -257,4 +302,6 @@ erDiagram
    - Company.companyCode
    - User.email, User.employeeNumber
    - Car.carNumber
-   - CarModel.(manufacturer, modelName)
+   - CarModel.(manufacturer, model)
+
+3. **ID 타입**: 모든 테이블의 ID는 `Int` (autoincrement) 사용
