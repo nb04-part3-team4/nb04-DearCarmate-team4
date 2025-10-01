@@ -6,10 +6,9 @@ declare global {
 }
 
 const prismaClientOptions = {
-  log:
-    process.env.NODE_ENV === 'development'
-      ? (['query', 'info', 'warn', 'error'] as const)
-      : (['error'] as const),
+  log: (process.env.NODE_ENV === 'development'
+    ? ['query', 'info', 'warn', 'error']
+    : ['error']) as ('query' | 'info' | 'warn' | 'error')[],
 };
 
 const prisma = globalThis.prisma || new PrismaClient(prismaClientOptions);

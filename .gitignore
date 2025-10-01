@@ -34,9 +34,16 @@ Thumbs.db
 coverage/
 .nyc_output/
 
+# Prisma
+prisma/*.db
+prisma/*.db-journal
+
 # Misc
 *.tsbuildinfo
 .cache/
+.temp/
+temp/
 
-
-/src/generated/prisma
+# Docker
+.dockerignore
+docker-compose.override.yml

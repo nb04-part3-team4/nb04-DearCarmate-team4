@@ -43,9 +43,9 @@ export const errorHandler = (
     const errorResponse: ErrorResponse = {
       status: 'error',
       message: 'Validation failed',
-      errors: err.errors.map((error) => ({
-        path: error.path.join('.'),
-        message: error.message,
+      errors: err.issues.map((issue) => ({
+        path: issue.path.join('.'),
+        message: issue.message,
       })),
     };
 
