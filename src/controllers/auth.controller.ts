@@ -2,6 +2,10 @@ import { Request, Response, NextFunction } from 'express';
 import { authService } from '@/services/auth.service';
 import { loginSchema, refreshTokenSchema } from '@/types/auth.schema';
 import { SuccessResponse } from '@/types/response';
+import type {
+  LoginResponseDto,
+  RefreshTokenResponseDto,
+} from '@/dtos/auth.dto';
 
 export class AuthController {
   async login(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -13,7 +17,7 @@ export class AuthController {
       const result = await authService.login(validatedData);
 
       // 3. 성공 응답
-      const response: SuccessResponse = {
+      const response: SuccessResponse<LoginResponseDto> = {
         status: 'success',
         data: result,
       };
@@ -39,7 +43,7 @@ export class AuthController {
       );
 
       // 3. 성공 응답
-      const response: SuccessResponse = {
+      const response: SuccessResponse<RefreshTokenResponseDto> = {
         status: 'success',
         data: result,
       };

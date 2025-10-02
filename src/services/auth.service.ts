@@ -7,10 +7,14 @@ import {
   JwtPayload,
 } from '@/utils/jwt';
 import { UnauthorizedError, NotFoundError } from '@/utils/custom-error';
-import { LoginRequest, LoginResponse } from '@/types/auth.schema';
+import type {
+  LoginRequestDto,
+  LoginResponseDto,
+  RefreshTokenResponseDto,
+} from '@/dtos/auth.dto';
 
 export class AuthService {
-  async login(data: LoginRequest): Promise<LoginResponse> {
+  async login(data: LoginRequestDto): Promise<LoginResponseDto> {
     const { email, password } = data;
 
     // 1. 이메일로 유저 조회
@@ -52,7 +56,7 @@ export class AuthService {
 
   async refreshAccessToken(
     refreshToken: string,
-  ): Promise<{ accessToken: string }> {
+  ): Promise<RefreshTokenResponseDto> {
     try {
       // 1. Refresh Token 검증
       const decoded = verifyRefreshToken(refreshToken);
