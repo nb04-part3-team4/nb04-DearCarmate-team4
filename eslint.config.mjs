@@ -1,21 +1,23 @@
-import tseslint from "@typescript-eslint/eslint-plugin";
-import tsparser from "@typescript-eslint/parser";
+import tseslint from '@typescript-eslint/eslint-plugin';
+import tsparser from '@typescript-eslint/parser';
+import prettier from 'eslint-plugin-prettier/recommended';
 
 export default [
   {
-    files: ["src/**/*.ts"],
+    files: ['src/**/*.ts'],
     languageOptions: {
       parser: tsparser,
       parserOptions: {
-        ecmaVersion: "latest",
-        sourceType: "module"
-      }
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
     },
     plugins: {
-      "@typescript-eslint": tseslint
+      '@typescript-eslint': tseslint,
     },
     rules: {
-      ...tseslint.configs.recommended.rules
-    }
-  }
+      ...tseslint.configs.recommended.rules,
+    },
+  },
+  prettier,
 ];

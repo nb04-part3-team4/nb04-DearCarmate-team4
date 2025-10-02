@@ -1,11 +1,14 @@
 import express, { Application } from 'express';
 import cors from 'cors';
 import { errorHandler, notFoundHandler } from '@/middlewares/error-handler';
+import carRouter from '@/routes/cars-router.js';
+import imageRouter from '@/routes/images-router.js';
 
 const app: Application = express();
 
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
 app.use(express.urlencoded({ extended: true }));
 
 app.get('/health', (req, res) => {
@@ -15,6 +18,9 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+app.use('/cars', carRouter);
+app.use('/images', imageRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
