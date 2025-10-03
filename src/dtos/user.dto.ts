@@ -1,3 +1,8 @@
+import {
+  UserDtoWithCreatedAt,
+  UserDtoWithTimestamps,
+} from '@/types/user.types';
+
 // 회원가입 요청 DTO
 export interface SignupRequestDto {
   email: string;
@@ -10,31 +15,10 @@ export interface SignupRequestDto {
 }
 
 // 회원가입 응답 DTO
-export interface SignupResponseDto {
-  id: number;
-  email: string;
-  name: string;
-  employeeNumber: string;
-  phoneNumber?: string;
-  imageUrl?: string;
-  isAdmin: boolean;
-  companyId: number;
-  createdAt: Date;
-}
+export type SignupResponseDto = UserDtoWithCreatedAt;
 
 // 내 정보 조회 응답 DTO
-export interface GetMeResponseDto {
-  id: number;
-  email: string;
-  name: string;
-  employeeNumber: string;
-  phoneNumber?: string;
-  imageUrl?: string;
-  isAdmin: boolean;
-  companyId: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
+export type GetMeResponseDto = UserDtoWithTimestamps;
 
 // 내 정보 수정 요청 DTO
 export interface UpdateMeRequestDto {
@@ -46,28 +30,7 @@ export interface UpdateMeRequestDto {
 }
 
 // 내 정보 수정 응답 DTO
-export interface UpdateMeResponseDto {
-  id: number;
-  email: string;
-  name: string;
-  employeeNumber: string;
-  phoneNumber?: string;
-  imageUrl?: string;
-  isAdmin: boolean;
-  companyId: number;
-  updatedAt: Date;
-}
+export type UpdateMeResponseDto = UserDtoWithTimestamps;
 
 // 유저 조회 응답 DTO (관리자용)
-export interface GetUserResponseDto {
-  id: number;
-  email: string;
-  name: string;
-  employeeNumber: string;
-  phoneNumber?: string;
-  imageUrl?: string;
-  isAdmin: boolean;
-  companyId: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
+export type GetUserResponseDto = UserDtoWithTimestamps;
