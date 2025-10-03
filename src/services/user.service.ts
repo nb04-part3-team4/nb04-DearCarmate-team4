@@ -15,54 +15,15 @@ import type {
   UpdateMeResponseDto,
   GetUserResponseDto,
 } from '@/dtos/user.dto';
+import { User } from '@prisma/client';
 
 export class UserService {
-  async signup(data: SignupRequestDto): Promise<SignupResponseDto> {
-    const {
-      email,
-      password,
-      name,
-      employeeNumber,
-      phoneNumber,
-      companyCode,
-      imageUrl,
-    } = data;
-
-    // 1. 기업 인증코드 검증
-    const company = await companyRepository.findByCompanyCode(companyCode);
-    if (!company) {
-      throw new BadRequestError('Invalid company code');
-    }
-
-    // 2. 이메일 중복 확인
-    const existingUserByEmail = await userRepository.findByEmail(email);
-    if (existingUserByEmail) {
-      throw new ConflictError('Email already exists');
-    }
-
-    // 3. 사원번호 중복 확인
-    const existingUserByEmployeeNumber =
-      await userRepository.findByEmployeeNumber(employeeNumber);
-    if (existingUserByEmployeeNumber) {
-      throw new ConflictError('Employee number already exists');
-    }
-
-    // 4. 비밀번호 해싱
-    const hashedPassword = await hashPassword(password);
-
-    // 5. 유저 생성
-    const user = await userRepository.create({
-      email,
-      password: hashedPassword,
-      name,
-      employeeNumber,
-      phoneNumber,
-      imageUrl,
-      companyId: company.id,
-    });
-
-    // 6. 응답 반환
-    return {
+  // User 엔티티를 DTO로 변환
+  private toUserDto(
+    user: User,
+    includeTimestamps: 'all' | 'createdAt' | 'none' = 'all',
+  ) {
+    const baseDto = {
       id: user.id,
       email: user.email,
       name: user.name,
@@ -71,8 +32,85 @@ export class UserService {
       imageUrl: user.imageUrl || undefined,
       isAdmin: user.isAdmin,
       companyId: user.companyId,
-      createdAt: user.createdAt,
     };
+
+    if (includeTimestamps === 'all') {
+      return {
+        ...baseDto,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      };
+    } else if (includeTimestamps === 'createdAt') {
+      return {
+        ...baseDto,
+        createdAt: user.createdAt,
+      };
+    }
+
+    return baseDto;
+  }
+
+  // 기업 코드 검증
+  private async validateCompanyCode(companyCode: string) {
+    const company = await companyRepository.findByCompanyCode(companyCode);
+    if (!company) {
+      throw new BadRequestError('Invalid company code');
+    }
+    return company;
+  }
+
+  // 이메일 중복 검증
+  private async validateEmailUniqueness(email: string) {
+    const existingUser = await userRepository.findByEmail(email);
+    if (existingUser) {
+      throw new ConflictError('Email already exists');
+    }
+  }
+
+  // 사원번호 중복 검증
+  private async validateEmployeeNumberUniqueness(employeeNumber: string) {
+    const existingUser =
+      await userRepository.findByEmployeeNumber(employeeNumber);
+    if (existingUser) {
+      throw new ConflictError('Employee number already exists');
+    }
+  }
+
+  // 회원가입 데이터 검증
+  private async validateSignupData(data: SignupRequestDto) {
+    const company = await this.validateCompanyCode(data.companyCode);
+    await this.validateEmailUniqueness(data.email);
+    await this.validateEmployeeNumberUniqueness(data.employeeNumber);
+    return company;
+  }
+
+  // 사용자 생성
+  private async createUserWithHashedPassword(
+    data: Omit<SignupRequestDto, 'companyCode'>,
+    companyId: number,
+  ) {
+    const hashedPassword = await hashPassword(data.password);
+
+    return await userRepository.create({
+      email: data.email,
+      password: hashedPassword,
+      name: data.name,
+      employeeNumber: data.employeeNumber,
+      phoneNumber: data.phoneNumber,
+      imageUrl: data.imageUrl,
+      companyId,
+    });
+  }
+
+  async signup(data: SignupRequestDto): Promise<SignupResponseDto> {
+    // 1. 데이터 검증
+    const company = await this.validateSignupData(data);
+
+    // 2. 유저 생성
+    const user = await this.createUserWithHashedPassword(data, company.id);
+
+    // 3. 응답 반환
+    return this.toUserDto(user, 'createdAt') as SignupResponseDto;
   }
 
   async getMe(userId: number): Promise<GetMeResponseDto> {
@@ -81,18 +119,7 @@ export class UserService {
       throw new NotFoundError('User not found');
     }
 
-    return {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      employeeNumber: user.employeeNumber,
-      phoneNumber: user.phoneNumber || undefined,
-      imageUrl: user.imageUrl || undefined,
-      isAdmin: user.isAdmin,
-      companyId: user.companyId,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    };
+    return this.toUserDto(user, 'all') as GetMeResponseDto;
   }
 
   async updateMe(
@@ -139,16 +166,9 @@ export class UserService {
 
     // 5. 응답 반환
     return {
-      id: updatedUser.id,
-      email: updatedUser.email,
-      name: updatedUser.name,
-      employeeNumber: updatedUser.employeeNumber,
-      phoneNumber: updatedUser.phoneNumber || undefined,
-      imageUrl: updatedUser.imageUrl || undefined,
-      isAdmin: updatedUser.isAdmin,
-      companyId: updatedUser.companyId,
+      ...this.toUserDto(updatedUser, 'all'),
       updatedAt: updatedUser.updatedAt,
-    };
+    } as UpdateMeResponseDto;
   }
 
   async getUserById(userId: number): Promise<GetUserResponseDto> {
@@ -157,18 +177,7 @@ export class UserService {
       throw new NotFoundError('User not found');
     }
 
-    return {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      employeeNumber: user.employeeNumber,
-      phoneNumber: user.phoneNumber || undefined,
-      imageUrl: user.imageUrl || undefined,
-      isAdmin: user.isAdmin,
-      companyId: user.companyId,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    };
+    return this.toUserDto(user, 'all') as GetUserResponseDto;
   }
 }
 
