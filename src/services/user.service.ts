@@ -1,4 +1,4 @@
-import { userRepository } from '@/repositories/user.repository';
+import { userRepository, UpdateUserData } from '@/repositories/user.repository';
 import { companyRepository } from '@/repositories/company.repository';
 import { hashPassword, verifyPassword } from '@/utils/password';
 import {
@@ -15,6 +15,11 @@ import type {
   UpdateMeResponseDto,
   GetUserResponseDto,
 } from '@/dtos/user.dto';
+import {
+  BaseUserDto,
+  UserDtoWithCreatedAt,
+  UserDtoWithTimestamps,
+} from '@/types/user.types';
 import { User } from '@prisma/client';
 
 export class UserService {
@@ -22,8 +27,8 @@ export class UserService {
   private toUserDto(
     user: User,
     includeTimestamps: 'all' | 'createdAt' | 'none' = 'all',
-  ) {
-    const baseDto = {
+  ): BaseUserDto | UserDtoWithCreatedAt | UserDtoWithTimestamps {
+    const baseDto: BaseUserDto = {
       id: user.id,
       email: user.email,
       name: user.name,
@@ -39,12 +44,12 @@ export class UserService {
         ...baseDto,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
-      };
+      } as UserDtoWithTimestamps;
     } else if (includeTimestamps === 'createdAt') {
       return {
         ...baseDto,
         createdAt: user.createdAt,
-      };
+      } as UserDtoWithCreatedAt;
     }
 
     return baseDto;
@@ -141,12 +146,7 @@ export class UserService {
     }
 
     // 3. 업데이트할 데이터 준비
-    const updateData: {
-      password?: string;
-      name?: string;
-      phoneNumber?: string;
-      imageUrl?: string;
-    } = {};
+    const updateData: UpdateUserData = {};
 
     if (newPassword) {
       updateData.password = await hashPassword(newPassword);
