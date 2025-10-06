@@ -182,6 +182,15 @@ export class UserService {
 
     return this.toUserDto(user, 'all') as GetUserResponseDto;
   }
+
+  async deleteMe(userId: number): Promise<void> {
+    const user = await userRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    await userRepository.delete(userId);
+  }
 }
 
 export const userService = new UserService();

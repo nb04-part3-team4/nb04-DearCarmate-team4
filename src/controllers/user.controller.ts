@@ -82,22 +82,42 @@ export class UserController {
     }
   }
 
+  async deleteMe(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      if (!req.user) {
+        throw new UnauthorizedError('Authentication required');
+      }
+
+      await userService.deleteMe(req.user.userId);
+
+      const response: SuccessResponse<null> = {
+        status: 'success',
+        data: null,
+      };
+
+      res.status(200).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async getUserById(
     req: Request,
     res: Response,
     next: NextFunction,
   ): Promise<void> {
     try {
-      // 1. userId 파라미터 검증
       const userId = parseInt(req.params.userId, 10);
       if (isNaN(userId)) {
         throw new BadRequestError('Invalid user ID');
       }
 
-      // 2. 유저 조회
       const result = await userService.getUserById(userId);
 
-      // 3. 성공 응답
       const response: SuccessResponse<GetUserResponseDto> = {
         status: 'success',
         data: result,
