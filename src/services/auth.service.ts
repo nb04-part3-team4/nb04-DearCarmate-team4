@@ -1,4 +1,5 @@
 import { userRepository } from '@/repositories/user.repository';
+import { companyRepository } from '@/repositories/company.repository';
 import { verifyPassword } from '@/utils/password';
 import {
   generateAccessToken,
@@ -35,22 +36,32 @@ export class AuthService {
       email: user.email,
     };
 
-    // 4. 토큰 생성
+    // 4. 회사 정보 조회
+    const company = await companyRepository.findById(user.companyId);
+    if (!company) {
+      throw new NotFoundError('Company not found');
+    }
+
+    // 5. 토큰 생성
     const accessToken = generateAccessToken(payload);
     const refreshToken = generateRefreshToken(payload);
 
-    // 5. 응답 데이터 반환
+    // 6. 응답 데이터 반환
     return {
-      accessToken,
-      refreshToken,
       user: {
         id: user.id,
-        email: user.email,
         name: user.name,
+        email: user.email,
         employeeNumber: user.employeeNumber,
+        phoneNumber: user.phoneNumber || undefined,
+        imageUrl: user.imageUrl || undefined,
         isAdmin: user.isAdmin,
-        companyId: user.companyId,
+        company: {
+          companyCode: company.companyCode,
+        },
       },
+      accessToken,
+      refreshToken,
     };
   }
 
@@ -67,15 +78,19 @@ export class AuthService {
         throw new NotFoundError('User not found');
       }
 
-      // 3. 새로운 Access Token 생성
+      // 3. 새로운 토큰 생성
       const payload: JwtPayload = {
         userId: user.id,
         email: user.email,
       };
 
       const accessToken = generateAccessToken(payload);
+      const newRefreshToken = generateRefreshToken(payload);
 
-      return { accessToken };
+      return {
+        accessToken,
+        refreshToken: newRefreshToken,
+      };
     } catch (error) {
       if (error instanceof Error && error.name === 'TokenExpiredError') {
         throw new UnauthorizedError('Refresh token expired');

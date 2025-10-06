@@ -2,69 +2,46 @@ import { companyRepository } from '@/repositories/company.repository';
 import { userRepository } from '@/repositories/user.repository';
 import { ConflictError, NotFoundError } from '@/utils/custom-error';
 import type {
-  CreateCompanyRequestDto,
   CreateCompanyResponseDto,
   GetCompaniesResponseDto,
-  GetCompanyResponseDto,
   GetCompanyUsersResponseDto,
-  UpdateCompanyRequestDto,
   UpdateCompanyResponseDto,
 } from '@/dtos/company.dto';
 import type {
+  CreateCompanyInput,
+  UpdateCompanyInput,
   CompanyQueryParams,
   CompanyUsersQueryParams,
 } from '@/types/company.schema';
-import { Company } from '@prisma/client';
 
-// Single Responsibility: 회사 관련 비즈니스 로직만 담당
 export class CompanyService {
-  private toCompanyDto(
-    company: Company,
-    includeUpdatedAt: boolean = false,
-  ): CreateCompanyResponseDto | GetCompanyResponseDto {
-    const baseDto = {
-      id: company.id,
-      name: company.name,
-      companyCode: company.companyCode,
-      address: company.address || undefined,
-      phone: company.phone || undefined,
-      createdAt: company.createdAt,
-    };
-
-    if (includeUpdatedAt) {
-      return {
-        ...baseDto,
-        updatedAt: company.updatedAt,
-      };
-    }
-
-    return baseDto;
-  }
-
-  private async validateCompanyCodeUniqueness(companyCode: string) {
-    const existingCompany =
-      await companyRepository.findByCompanyCode(companyCode);
-    if (existingCompany) {
-      throw new ConflictError('Company code already exists');
-    }
+  private async getUserCount(companyId: number): Promise<number> {
+    return await companyRepository.countUsersByCompanyId(companyId);
   }
 
   async registerCompany(
-    data: CreateCompanyRequestDto,
+    data: CreateCompanyInput,
   ): Promise<CreateCompanyResponseDto> {
-    // 1. 회사 코드 중복 검증
-    await this.validateCompanyCodeUniqueness(data.companyCode);
+    const existingCompany = await companyRepository.findByCompanyCode(
+      data.companyCode,
+    );
+    if (existingCompany) {
+      throw new ConflictError('이미 존재하는 회사 코드입니다');
+    }
 
-    // 2. 회사 생성
     const company = await companyRepository.create({
-      name: data.name,
+      name: data.companyName,
       companyCode: data.companyCode,
-      address: data.address,
-      phone: data.phone,
     });
 
-    // 3. 응답 반환
-    return this.toCompanyDto(company, false) as CreateCompanyResponseDto;
+    const userCount = await this.getUserCount(company.id);
+
+    return {
+      id: company.id,
+      companyName: company.name,
+      companyCode: company.companyCode,
+      userCount,
+    };
   }
 
   async getCompanies(
@@ -73,52 +50,58 @@ export class CompanyService {
     const { data, total } = await companyRepository.findAll(params);
     const totalPages = Math.ceil(total / params.pageSize);
 
-    return {
-      data: data.map((company) => ({
+    const companiesWithUserCount = await Promise.all(
+      data.map(async (company) => ({
         id: company.id,
-        name: company.name,
+        companyName: company.name,
         companyCode: company.companyCode,
-        address: company.address || undefined,
-        phone: company.phone || undefined,
-        createdAt: company.createdAt,
-        updatedAt: company.updatedAt,
+        userCount: await this.getUserCount(company.id),
       })),
-      pagination: {
-        currentPage: params.page,
-        pageSize: params.pageSize,
-        totalCount: total,
-        totalPages,
-      },
+    );
+
+    return {
+      currentPage: params.page,
+      totalPages,
+      totalItemCount: total,
+      data: companiesWithUserCount,
     };
-  }
-
-  async getCompanyById(companyId: number): Promise<GetCompanyResponseDto> {
-    const company = await companyRepository.findById(companyId);
-    if (!company) {
-      throw new NotFoundError('Company not found');
-    }
-
-    return this.toCompanyDto(company, true) as GetCompanyResponseDto;
   }
 
   async updateCompany(
     companyId: number,
-    data: UpdateCompanyRequestDto,
+    data: UpdateCompanyInput,
   ): Promise<UpdateCompanyResponseDto> {
     const company = await companyRepository.findById(companyId);
     if (!company) {
-      throw new NotFoundError('Company not found');
+      throw new NotFoundError('존재하지 않는 회사입니다');
     }
 
-    const updatedCompany = await companyRepository.update(companyId, data);
+    const updateData: { name?: string; companyCode?: string } = {};
+    if (data.companyName !== undefined) {
+      updateData.name = data.companyName;
+    }
+    if (data.companyCode !== undefined) {
+      updateData.companyCode = data.companyCode;
+    }
 
-    return this.toCompanyDto(updatedCompany, true) as UpdateCompanyResponseDto;
+    const updatedCompany = await companyRepository.update(
+      companyId,
+      updateData,
+    );
+    const userCount = await this.getUserCount(updatedCompany.id);
+
+    return {
+      id: updatedCompany.id,
+      companyName: updatedCompany.name,
+      companyCode: updatedCompany.companyCode,
+      userCount,
+    };
   }
 
   async deleteCompany(companyId: number): Promise<void> {
     const company = await companyRepository.findById(companyId);
     if (!company) {
-      throw new NotFoundError('Company not found');
+      throw new NotFoundError('존재하지 않는 회사입니다');
     }
 
     await companyRepository.delete(companyId);
@@ -130,24 +113,27 @@ export class CompanyService {
     const { data, total } = await userRepository.findByCompanyId(params);
     const totalPages = Math.ceil(total / params.pageSize);
 
+    const usersWithCompany = await Promise.all(
+      data.map(async (user) => {
+        const company = await companyRepository.findById(user.companyId);
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          employeeNumber: user.employeeNumber,
+          phoneNumber: user.phoneNumber || undefined,
+          company: {
+            companyName: company?.name || '',
+          },
+        };
+      }),
+    );
+
     return {
-      data: data.map((user) => ({
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        employeeNumber: user.employeeNumber,
-        phoneNumber: user.phoneNumber || undefined,
-        imageUrl: user.imageUrl || undefined,
-        isAdmin: user.isAdmin,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      })),
-      pagination: {
-        currentPage: params.page,
-        pageSize: params.pageSize,
-        totalCount: total,
-        totalPages,
-      },
+      currentPage: params.page,
+      totalPages,
+      totalItemCount: total,
+      data: usersWithCompany,
     };
   }
 }

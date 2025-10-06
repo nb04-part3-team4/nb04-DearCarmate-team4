@@ -1,16 +1,13 @@
 import { z } from 'zod';
 
 export const createCompanySchema = z.object({
-  name: z.string().min(1, 'Company name is required'),
+  companyName: z.string().min(1, 'Company name is required'),
   companyCode: z.string().min(1, 'Company code is required'),
-  address: z.string().optional(),
-  phone: z.string().optional(),
 });
 
 export const updateCompanySchema = z.object({
-  name: z.string().min(1, 'Company name is required').optional(),
-  address: z.string().optional(),
-  phone: z.string().optional(),
+  companyName: z.string().min(1, 'Company name is required').optional(),
+  companyCode: z.string().min(1, 'Company code is required').optional(),
 });
 
 export const companyQuerySchema = z.object({

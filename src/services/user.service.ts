@@ -7,186 +7,139 @@ import { hashPassword, verifyPassword } from '@/utils/password';
 import {
   BadRequestError,
   NotFoundError,
-  UnauthorizedError,
   ConflictError,
 } from '@/utils/custom-error';
 import type {
-  SignupRequestDto,
   SignupResponseDto,
   GetMeResponseDto,
-  UpdateMeRequestDto,
   UpdateMeResponseDto,
   GetUserResponseDto,
+  UserResponseDto,
 } from '@/dtos/user.dto';
-import {
-  BaseUserDto,
-  UserDtoWithCreatedAt,
-  UserDtoWithTimestamps,
-} from '@/types/user.types';
-import { User } from '@prisma/client';
+import type { SignupInput, UpdateMeInput } from '@/types/user.schema';
+import { User, Company } from '@prisma/client';
 
 export class UserService {
-  // User 엔티티를 DTO로 변환
-  private toUserDto(
+  private async toUserResponseDto(
     user: User,
-    includeTimestamps: 'all' | 'createdAt' | 'none' = 'all',
-  ): BaseUserDto | UserDtoWithCreatedAt | UserDtoWithTimestamps {
-    const baseDto: BaseUserDto = {
+    company: Company,
+  ): Promise<UserResponseDto> {
+    return {
       id: user.id,
-      email: user.email,
       name: user.name,
+      email: user.email,
       employeeNumber: user.employeeNumber,
       phoneNumber: user.phoneNumber || undefined,
       imageUrl: user.imageUrl || undefined,
       isAdmin: user.isAdmin,
-      companyId: user.companyId,
+      company: {
+        companyCode: company.companyCode,
+      },
     };
-
-    if (includeTimestamps === 'all') {
-      return {
-        ...baseDto,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      } as UserDtoWithTimestamps;
-    } else if (includeTimestamps === 'createdAt') {
-      return {
-        ...baseDto,
-        createdAt: user.createdAt,
-      } as UserDtoWithCreatedAt;
-    }
-
-    return baseDto;
   }
 
-  // 기업 코드 검증
-  private async validateCompanyCode(companyCode: string) {
-    const company = await companyRepository.findByCompanyCode(companyCode);
+  async signup(data: SignupInput): Promise<SignupResponseDto> {
+    const company = await companyRepository.findByCompanyCode(data.companyCode);
     if (!company) {
-      throw new BadRequestError('Invalid company code');
+      throw new BadRequestError('잘못된 요청입니다');
     }
-    return company;
-  }
 
-  // 이메일 중복 검증
-  private async validateEmailUniqueness(email: string) {
-    const existingUser = await userRepository.findByEmail(email);
+    const existingUser = await userRepository.findByEmail(data.email);
     if (existingUser) {
-      throw new ConflictError('Email already exists');
+      throw new ConflictError('이미 존재하는 이메일입니다');
     }
-  }
 
-  // 사원번호 중복 검증
-  private async validateEmployeeNumberUniqueness(employeeNumber: string) {
-    const existingUser =
-      await userRepository.findByEmployeeNumber(employeeNumber);
-    if (existingUser) {
-      throw new ConflictError('Employee number already exists');
-    }
-  }
-
-  // 회원가입 데이터 검증
-  private async validateSignupData(data: SignupRequestDto) {
-    const company = await this.validateCompanyCode(data.companyCode);
-    await this.validateEmailUniqueness(data.email);
-    await this.validateEmployeeNumberUniqueness(data.employeeNumber);
-    return company;
-  }
-
-  // 사용자 생성
-  private async createUserWithHashedPassword(
-    data: Omit<SignupRequestDto, 'companyCode'>,
-    companyId: number,
-  ) {
     const hashedPassword = await hashPassword(data.password);
 
-    return await userRepository.create({
+    const user = await userRepository.create({
       email: data.email,
       password: hashedPassword,
       name: data.name,
       employeeNumber: data.employeeNumber,
       phoneNumber: data.phoneNumber,
-      imageUrl: data.imageUrl,
-      companyId,
+      imageUrl: undefined,
+      companyId: company.id,
     });
-  }
 
-  async signup(data: SignupRequestDto): Promise<SignupResponseDto> {
-    // 1. 데이터 검증
-    const company = await this.validateSignupData(data);
-
-    // 2. 유저 생성
-    const user = await this.createUserWithHashedPassword(data, company.id);
-
-    // 3. 응답 반환
-    return this.toUserDto(user, 'createdAt') as SignupResponseDto;
+    return this.toUserResponseDto(user, company);
   }
 
   async getMe(userId: number): Promise<GetMeResponseDto> {
     const user = await userRepository.findById(userId);
     if (!user) {
-      throw new NotFoundError('User not found');
+      throw new NotFoundError('존재하지 않는 유저입니다');
     }
 
-    return this.toUserDto(user, 'all') as GetMeResponseDto;
+    const company = await companyRepository.findById(user.companyId);
+    if (!company) {
+      throw new NotFoundError('존재하지 않는 회사입니다');
+    }
+
+    return this.toUserResponseDto(user, company);
   }
 
   async updateMe(
     userId: number,
-    data: UpdateMeRequestDto,
+    data: UpdateMeInput,
   ): Promise<UpdateMeResponseDto> {
-    const { password, newPassword, name, phoneNumber, imageUrl } = data;
-
-    // 1. 유저 조회
     const user = await userRepository.findById(userId);
     if (!user) {
-      throw new NotFoundError('User not found');
+      throw new NotFoundError('존재하지 않는 유저입니다');
     }
 
-    // 2. 현재 비밀번호 확인
-    const isPasswordValid = await verifyPassword(user.password, password);
-    if (!isPasswordValid) {
-      throw new UnauthorizedError('Invalid password');
+    if (data.currentPassword) {
+      const isPasswordValid = await verifyPassword(
+        user.password,
+        data.currentPassword,
+      );
+      if (!isPasswordValid) {
+        throw new BadRequestError('현재 비밀번호가 맞지 않습니다');
+      }
     }
 
-    // 3. 업데이트할 데이터 준비
     const updateData: UpdateUserInput = {};
 
-    if (newPassword) {
-      updateData.password = await hashPassword(newPassword);
+    if (data.password) {
+      updateData.password = await hashPassword(data.password);
     }
-    if (name !== undefined) {
-      updateData.name = name;
+    if (data.employeeNumber !== undefined) {
+      updateData.employeeNumber = data.employeeNumber;
     }
-    if (phoneNumber !== undefined) {
-      updateData.phoneNumber = phoneNumber;
+    if (data.phoneNumber !== undefined) {
+      updateData.phoneNumber = data.phoneNumber;
     }
-    if (imageUrl !== undefined) {
-      updateData.imageUrl = imageUrl;
+    if (data.imageUrl !== undefined) {
+      updateData.imageUrl = data.imageUrl;
     }
 
-    // 4. 유저 정보 업데이트
     const updatedUser = await userRepository.update(userId, updateData);
 
-    // 5. 응답 반환
-    return {
-      ...this.toUserDto(updatedUser, 'all'),
-      updatedAt: updatedUser.updatedAt,
-    } as UpdateMeResponseDto;
+    const company = await companyRepository.findById(updatedUser.companyId);
+    if (!company) {
+      throw new NotFoundError('존재하지 않는 회사입니다');
+    }
+
+    return this.toUserResponseDto(updatedUser, company);
   }
 
   async getUserById(userId: number): Promise<GetUserResponseDto> {
     const user = await userRepository.findById(userId);
     if (!user) {
-      throw new NotFoundError('User not found');
+      throw new NotFoundError('존재하지 않는 유저입니다');
     }
 
-    return this.toUserDto(user, 'all') as GetUserResponseDto;
+    const company = await companyRepository.findById(user.companyId);
+    if (!company) {
+      throw new NotFoundError('존재하지 않는 회사입니다');
+    }
+
+    return this.toUserResponseDto(user, company);
   }
 
   async deleteMe(userId: number): Promise<void> {
     const user = await userRepository.findById(userId);
     if (!user) {
-      throw new NotFoundError('User not found');
+      throw new NotFoundError('존재하지 않는 유저입니다');
     }
 
     await userRepository.delete(userId);

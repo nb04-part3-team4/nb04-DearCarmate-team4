@@ -1,83 +1,45 @@
-export interface CreateCompanyRequestDto {
-  name: string;
-  companyCode: string;
-  address?: string;
-  phone?: string;
-}
-
 export interface CreateCompanyResponseDto {
   id: number;
-  name: string;
+  companyName: string;
   companyCode: string;
-  address?: string;
-  phone?: string;
-  createdAt: Date;
-}
-
-export interface CompanyItemDto {
-  id: number;
-  name: string;
-  companyCode: string;
-  address?: string;
-  phone?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface GetCompaniesResponseDto {
-  data: CompanyItemDto[];
-  pagination: {
-    currentPage: number;
-    pageSize: number;
-    totalCount: number;
-    totalPages: number;
-  };
-}
-
-export interface GetCompanyResponseDto {
-  id: number;
-  name: string;
-  companyCode: string;
-  address?: string;
-  phone?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface UpdateCompanyRequestDto {
-  name?: string;
-  address?: string;
-  phone?: string;
+  userCount: number;
 }
 
 export interface UpdateCompanyResponseDto {
   id: number;
-  name: string;
+  companyName: string;
   companyCode: string;
-  address?: string;
-  phone?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  userCount: number;
+}
+
+export interface CompanyItemDto {
+  id: number;
+  companyName: string;
+  companyCode: string;
+  userCount: number;
+}
+
+export interface GetCompaniesResponseDto {
+  currentPage: number;
+  totalPages: number;
+  totalItemCount: number;
+  data: CompanyItemDto[];
 }
 
 export interface CompanyUserItemDto {
   id: number;
-  email: string;
   name: string;
+  email: string;
   employeeNumber: string;
   phoneNumber?: string;
-  imageUrl?: string;
-  isAdmin: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  company: {
+    companyName: string;
+  };
 }
 
 export interface GetCompanyUsersResponseDto {
+  currentPage: number;
+  totalPages: number;
+  totalItemCount: number;
   data: CompanyUserItemDto[];
-  pagination: {
-    currentPage: number;
-    pageSize: number;
-    totalCount: number;
-    totalPages: number;
-  };
 }

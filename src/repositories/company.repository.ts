@@ -1,13 +1,9 @@
 import prisma from '@/utils/prisma';
 import { Company } from '@prisma/client';
-import type {
-  CreateCompanyInput,
-  UpdateCompanyInput,
-  CompanyQueryParams,
-} from '@/types/company.schema';
+import type { CompanyQueryParams } from '@/types/company.schema';
 
 export class CompanyRepository {
-  async create(data: CreateCompanyInput): Promise<Company> {
+  async create(data: { name: string; companyCode: string }): Promise<Company> {
     return await prisma.company.create({
       data,
     });
@@ -49,7 +45,10 @@ export class CompanyRepository {
     return { data, total };
   }
 
-  async update(id: number, data: UpdateCompanyInput): Promise<Company> {
+  async update(
+    id: number,
+    data: { name?: string; companyCode?: string },
+  ): Promise<Company> {
     return await prisma.company.update({
       where: { id },
       data,
@@ -59,6 +58,12 @@ export class CompanyRepository {
   async delete(id: number): Promise<Company> {
     return await prisma.company.delete({
       where: { id },
+    });
+  }
+
+  async countUsersByCompanyId(companyId: number): Promise<number> {
+    return await prisma.user.count({
+      where: { companyId },
     });
   }
 }

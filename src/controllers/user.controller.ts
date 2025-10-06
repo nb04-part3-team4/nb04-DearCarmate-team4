@@ -35,10 +35,9 @@ export class UserController {
     try {
       // 1. 인증된 유저 확인
       if (!req.user) {
-        throw new UnauthorizedError('Authentication required');
+        throw new UnauthorizedError('로그인이 필요합니다');
       }
 
-      // 2. 내 정보 조회
       const result = await userService.getMe(req.user.userId);
 
       // 3. 성공 응답
@@ -61,13 +60,10 @@ export class UserController {
     try {
       // 1. 인증된 유저 확인
       if (!req.user) {
-        throw new UnauthorizedError('Authentication required');
+        throw new UnauthorizedError('로그인이 필요합니다');
       }
 
-      // 2. 요청 데이터 검증
       const validatedData = updateMeSchema.parse(req.body);
-
-      // 3. 내 정보 수정
       const result = await userService.updateMe(req.user.userId, validatedData);
 
       // 4. 성공 응답
@@ -89,17 +85,12 @@ export class UserController {
   ): Promise<void> {
     try {
       if (!req.user) {
-        throw new UnauthorizedError('Authentication required');
+        throw new UnauthorizedError('로그인이 필요합니다');
       }
 
       await userService.deleteMe(req.user.userId);
 
-      const response: SuccessResponse<null> = {
-        status: 'success',
-        data: null,
-      };
-
-      res.status(200).json(response);
+      res.status(200).json({ message: '유저 삭제 성공' });
     } catch (error) {
       next(error);
     }
@@ -113,7 +104,7 @@ export class UserController {
     try {
       const userId = parseInt(req.params.userId, 10);
       if (isNaN(userId)) {
-        throw new BadRequestError('Invalid user ID');
+        throw new BadRequestError('잘못된 요청입니다');
       }
 
       const result = await userService.getUserById(userId);
