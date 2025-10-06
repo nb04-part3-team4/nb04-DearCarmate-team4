@@ -1,23 +1,13 @@
-export interface CreateCompanyResponseDto {
+export interface CompanyDto {
   id: number;
   companyName: string;
   companyCode: string;
   userCount: number;
 }
 
-export interface UpdateCompanyResponseDto {
-  id: number;
-  companyName: string;
-  companyCode: string;
-  userCount: number;
-}
-
-export interface CompanyItemDto {
-  id: number;
-  companyName: string;
-  companyCode: string;
-  userCount: number;
-}
+export type CreateCompanyResponseDto = CompanyDto;
+export type UpdateCompanyResponseDto = CompanyDto;
+export type CompanyItemDto = CompanyDto;
 
 export interface GetCompaniesResponseDto {
   currentPage: number;

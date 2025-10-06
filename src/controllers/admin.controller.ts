@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { adminService } from '@/services/admin.service';
-import { SuccessResponse } from '@/types/response';
 import { BadRequestError } from '@/utils/custom-error';
 
 export class AdminController {
@@ -12,17 +11,12 @@ export class AdminController {
     try {
       const userId = parseInt(req.params.userId, 10);
       if (isNaN(userId)) {
-        throw new BadRequestError('Invalid user ID');
+        throw new BadRequestError('잘못된 요청입니다');
       }
 
       await adminService.deleteUser(userId);
 
-      const response: SuccessResponse<null> = {
-        status: 'success',
-        data: null,
-      };
-
-      res.status(200).json(response);
+      res.status(200).json({ message: '유저 삭제 성공' });
     } catch (error) {
       next(error);
     }
