@@ -4,6 +4,7 @@ import { errorHandler, notFoundHandler } from '@/middlewares/error-handler
 import carRouter from '@/routes/cars-router.js';
 import imageRouter from '@/routes/images-router.js';
 import authRoutes from '@/routes/auth.routes';
+import userRoutes from '@/routes/user.routes';
 
 const app: Application = express();
 
@@ -24,6 +25,7 @@ app.get('/health', (_req, res) => {
 app.use('/cars', carRouter);
 app.use('/images', imageRouter);
 app.use('/auth', authRoutes);
+app.use('/users', userRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

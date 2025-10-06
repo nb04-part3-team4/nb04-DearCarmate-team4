@@ -1,4 +1,4 @@
-import { authRepository } from '@/repositories/auth.repository';
+import { userRepository } from '@/repositories/user.repository';
 import { verifyPassword } from '@/utils/password';
 import {
   generateAccessToken,
@@ -18,7 +18,7 @@ export class AuthService {
     const { email, password } = data;
 
     // 1. 이메일로 유저 조회
-    const user = await authRepository.findUserByEmail(email);
+    const user = await userRepository.findByEmail(email);
     if (!user) {
       throw new UnauthorizedError('Invalid email or password');
     }
@@ -62,7 +62,7 @@ export class AuthService {
       const decoded = verifyRefreshToken(refreshToken);
 
       // 2. 유저 존재 여부 확인
-      const user = await authRepository.findUserById(decoded.userId);
+      const user = await userRepository.findById(decoded.userId);
       if (!user) {
         throw new NotFoundError('User not found');
       }
