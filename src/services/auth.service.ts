@@ -21,13 +21,13 @@ export class AuthService {
     // 1. 이메일로 유저 조회
     const user = await userRepository.findByEmail(email);
     if (!user) {
-      throw new UnauthorizedError('Invalid email or password');
+      throw new UnauthorizedError('이메일 또는 비밀번호가 일치하지 않습니다');
     }
 
     // 2. 비밀번호 검증
     const isPasswordValid = await verifyPassword(user.password, password);
     if (!isPasswordValid) {
-      throw new UnauthorizedError('Invalid email or password');
+      throw new UnauthorizedError('이메일 또는 비밀번호가 일치하지 않습니다');
     }
 
     // 3. JWT 페이로드 생성
@@ -39,7 +39,7 @@ export class AuthService {
     // 4. 회사 정보 조회
     const company = await companyRepository.findById(user.companyId);
     if (!company) {
-      throw new NotFoundError('Company not found');
+      throw new NotFoundError('존재하지 않는 회사입니다');
     }
 
     // 5. 토큰 생성
@@ -75,7 +75,7 @@ export class AuthService {
       // 2. 유저 존재 여부 확인
       const user = await userRepository.findById(decoded.userId);
       if (!user) {
-        throw new NotFoundError('User not found');
+        throw new NotFoundError('존재하지 않는 유저입니다');
       }
 
       // 3. 새로운 토큰 생성
@@ -93,9 +93,9 @@ export class AuthService {
       };
     } catch (error) {
       if (error instanceof Error && error.name === 'TokenExpiredError') {
-        throw new UnauthorizedError('Refresh token expired');
+        throw new UnauthorizedError('리프레시 토큰이 만료되었습니다');
       } else if (error instanceof Error && error.name === 'JsonWebTokenError') {
-        throw new UnauthorizedError('Invalid refresh token');
+        throw new UnauthorizedError('유효하지 않은 리프레시 토큰입니다');
       }
       throw error;
     }
