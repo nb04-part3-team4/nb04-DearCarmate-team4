@@ -55,6 +55,24 @@ export class UserRepository {
       where: { id },
     });
   }
+
+  async findByCompanyId(companyId: number) {
+    return await prisma.user.findMany({
+      where: { companyId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        employeeNumber: true,
+        phoneNumber: true,
+        imageUrl: true,
+        isAdmin: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 }
 
 export const userRepository = new UserRepository();

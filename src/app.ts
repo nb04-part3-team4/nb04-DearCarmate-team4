@@ -13,6 +13,12 @@ app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 app.use(express.urlencoded({ extended: true }));
 
+// API Routes
+// app.use('/cars', carRouter);
+app.use('/images', imageRouter);
+app.use('/auth', authRoutes);
+app.use('/users', userRoutes);
+
 app.get('/health', (_req, res) => {
   res.status(200).json({
     status: 'OK',
@@ -20,12 +26,6 @@ app.get('/health', (_req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
-
-// API Routes
-// app.use('/cars', carRouter);
-app.use('/images', imageRouter);
-app.use('/auth', authRoutes);
-app.use('/users', userRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

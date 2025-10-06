@@ -1,4 +1,5 @@
 import { companyRepository } from '@/repositories/company.repository';
+import { userRepository } from '@/repositories/user.repository';
 import { ConflictError, NotFoundError } from '@/utils/custom-error';
 import type {
   CreateCompanyRequestDto,
@@ -6,6 +7,8 @@ import type {
   GetCompaniesResponseDto,
   GetCompanyResponseDto,
   GetCompanyUsersResponseDto,
+  UpdateCompanyRequestDto,
+  UpdateCompanyResponseDto,
 } from '@/dtos/company.dto';
 import type { CompanyQueryParams } from '@/types/company.schema';
 import { Company } from '@prisma/client';
@@ -83,19 +86,39 @@ export class CompanyService {
     return this.toCompanyDto(company, true) as GetCompanyResponseDto;
   }
 
-  async getUsersByCompanyId(
+  async updateCompany(
     companyId: number,
-  ): Promise<GetCompanyUsersResponseDto[]> {
-    // 1. 회사 존재 확인
+    data: UpdateCompanyRequestDto,
+  ): Promise<UpdateCompanyResponseDto> {
     const company = await companyRepository.findById(companyId);
     if (!company) {
       throw new NotFoundError('Company not found');
     }
 
-    // 2. 해당 회사의 유저 목록 조회
-    const users = await companyRepository.findUsersByCompanyId(companyId);
+    const updatedCompany = await companyRepository.update(companyId, data);
 
-    // 3. DTO 변환 및 반환
+    return this.toCompanyDto(updatedCompany, true) as UpdateCompanyResponseDto;
+  }
+
+  async deleteCompany(companyId: number): Promise<void> {
+    const company = await companyRepository.findById(companyId);
+    if (!company) {
+      throw new NotFoundError('Company not found');
+    }
+
+    await companyRepository.delete(companyId);
+  }
+
+  async getUsersByCompanyId(
+    companyId: number,
+  ): Promise<GetCompanyUsersResponseDto[]> {
+    const company = await companyRepository.findById(companyId);
+    if (!company) {
+      throw new NotFoundError('Company not found');
+    }
+
+    const users = await userRepository.findByCompanyId(companyId);
+
     return users.map((user) => ({
       id: user.id,
       email: user.email,
