@@ -10,7 +10,10 @@ import type {
   UpdateCompanyRequestDto,
   UpdateCompanyResponseDto,
 } from '@/dtos/company.dto';
-import type { CompanyQueryParams } from '@/types/company.schema';
+import type {
+  CompanyQueryParams,
+  CompanyUsersQueryParams,
+} from '@/types/company.schema';
 import { Company } from '@prisma/client';
 
 // Single Responsibility: 회사 관련 비즈니스 로직만 담당
@@ -65,16 +68,28 @@ export class CompanyService {
   }
 
   async getCompanies(
-    query?: CompanyQueryParams,
-  ): Promise<GetCompaniesResponseDto[]> {
-    const companies = await companyRepository.findAll({
-      companyCode: query?.companyCode,
-      name: query?.name,
-    });
+    params: CompanyQueryParams,
+  ): Promise<GetCompaniesResponseDto> {
+    const { data, total } = await companyRepository.findAll(params);
+    const totalPages = Math.ceil(total / params.pageSize);
 
-    return companies.map((company) =>
-      this.toCompanyDto(company, true),
-    ) as GetCompaniesResponseDto[];
+    return {
+      data: data.map((company) => ({
+        id: company.id,
+        name: company.name,
+        companyCode: company.companyCode,
+        address: company.address || undefined,
+        phone: company.phone || undefined,
+        createdAt: company.createdAt,
+        updatedAt: company.updatedAt,
+      })),
+      pagination: {
+        currentPage: params.page,
+        pageSize: params.pageSize,
+        totalCount: total,
+        totalPages,
+      },
+    };
   }
 
   async getCompanyById(companyId: number): Promise<GetCompanyResponseDto> {
@@ -110,26 +125,30 @@ export class CompanyService {
   }
 
   async getUsersByCompanyId(
-    companyId: number,
-  ): Promise<GetCompanyUsersResponseDto[]> {
-    const company = await companyRepository.findById(companyId);
-    if (!company) {
-      throw new NotFoundError('Company not found');
-    }
+    params: CompanyUsersQueryParams,
+  ): Promise<GetCompanyUsersResponseDto> {
+    const { data, total } = await userRepository.findByCompanyId(params);
+    const totalPages = Math.ceil(total / params.pageSize);
 
-    const users = await userRepository.findByCompanyId(companyId);
-
-    return users.map((user) => ({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      employeeNumber: user.employeeNumber,
-      phoneNumber: user.phoneNumber || undefined,
-      imageUrl: user.imageUrl || undefined,
-      isAdmin: user.isAdmin,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    }));
+    return {
+      data: data.map((user) => ({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        employeeNumber: user.employeeNumber,
+        phoneNumber: user.phoneNumber || undefined,
+        imageUrl: user.imageUrl || undefined,
+        isAdmin: user.isAdmin,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      })),
+      pagination: {
+        currentPage: params.page,
+        pageSize: params.pageSize,
+        totalCount: total,
+        totalPages,
+      },
+    };
   }
 }
 

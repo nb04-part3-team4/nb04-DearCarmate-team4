@@ -1,5 +1,6 @@
 import prisma from '@/utils/prisma';
 import { User } from '@prisma/client';
+import type { CompanyUsersQueryParams } from '@/types/company.schema';
 
 export interface CreateUserInput {
   email: string;
@@ -56,22 +57,52 @@ export class UserRepository {
     });
   }
 
-  async findByCompanyId(companyId: number) {
-    return await prisma.user.findMany({
-      where: { companyId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        employeeNumber: true,
-        phoneNumber: true,
-        imageUrl: true,
-        isAdmin: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+  async findByCompanyId(params: CompanyUsersQueryParams) {
+    const { page, pageSize, searchBy, keyword } = params;
+    const skip = (page - 1) * pageSize;
+
+    let where: {
+      company?: { name: { contains: string } };
+      name?: { contains: string };
+      email?: { contains: string };
+    } = {};
+
+    if (searchBy && keyword) {
+      if (searchBy === 'companyName') {
+        where = {
+          company: {
+            name: { contains: keyword },
+          },
+        };
+      } else if (searchBy === 'name') {
+        where = { name: { contains: keyword } };
+      } else if (searchBy === 'email') {
+        where = { email: { contains: keyword } };
+      }
+    }
+
+    const [data, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        skip,
+        take: pageSize,
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          employeeNumber: true,
+          phoneNumber: true,
+          imageUrl: true,
+          isAdmin: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.user.count({ where }),
+    ]);
+
+    return { data, total };
   }
 }
 

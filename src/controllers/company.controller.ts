@@ -4,6 +4,7 @@ import {
   createCompanySchema,
   companyQuerySchema,
   updateCompanySchema,
+  companyUsersQuerySchema,
 } from '@/types/company.schema';
 import { SuccessResponse } from '@/types/response';
 import { BadRequestError } from '@/utils/custom-error';
@@ -44,7 +45,7 @@ export class CompanyController {
       const validatedQuery = companyQuerySchema.parse(req.query);
       const result = await companyService.getCompanies(validatedQuery);
 
-      const response: SuccessResponse<GetCompaniesResponseDto[]> = {
+      const response: SuccessResponse<GetCompaniesResponseDto> = {
         status: 'success',
         data: result,
       };
@@ -113,14 +114,10 @@ export class CompanyController {
     next: NextFunction,
   ): Promise<void> {
     try {
-      const companyId = parseInt(req.params.companyId, 10);
-      if (isNaN(companyId)) {
-        throw new BadRequestError('Invalid company ID');
-      }
+      const validatedQuery = companyUsersQuerySchema.parse(req.query);
+      const result = await companyService.getUsersByCompanyId(validatedQuery);
 
-      const result = await companyService.getUsersByCompanyId(companyId);
-
-      const response: SuccessResponse<GetCompanyUsersResponseDto[]> = {
+      const response: SuccessResponse<GetCompanyUsersResponseDto> = {
         status: 'success',
         data: result,
       };

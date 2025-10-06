@@ -14,7 +14,7 @@ export interface CreateCompanyResponseDto {
   createdAt: Date;
 }
 
-export interface GetCompaniesResponseDto {
+export interface CompanyItemDto {
   id: number;
   name: string;
   companyCode: string;
@@ -22,6 +22,16 @@ export interface GetCompaniesResponseDto {
   phone?: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface GetCompaniesResponseDto {
+  data: CompanyItemDto[];
+  pagination: {
+    currentPage: number;
+    pageSize: number;
+    totalCount: number;
+    totalPages: number;
+  };
 }
 
 export interface GetCompanyResponseDto {
@@ -50,7 +60,7 @@ export interface UpdateCompanyResponseDto {
   updatedAt: Date;
 }
 
-export interface GetCompanyUsersResponseDto {
+export interface CompanyUserItemDto {
   id: number;
   email: string;
   name: string;
@@ -60,4 +70,14 @@ export interface GetCompanyUsersResponseDto {
   isAdmin: boolean;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface GetCompanyUsersResponseDto {
+  data: CompanyUserItemDto[];
+  pagination: {
+    currentPage: number;
+    pageSize: number;
+    totalCount: number;
+    totalPages: number;
+  };
 }

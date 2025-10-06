@@ -14,10 +14,20 @@ export const updateCompanySchema = z.object({
 });
 
 export const companyQuerySchema = z.object({
-  companyCode: z.string().optional(),
-  name: z.string().optional(),
+  page: z.coerce.number().int().positive().default(1),
+  pageSize: z.coerce.number().int().positive().max(100).default(10),
+  searchBy: z.enum(['companyName']).optional(),
+  keyword: z.string().optional(),
+});
+
+export const companyUsersQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  pageSize: z.coerce.number().int().positive().max(100).default(10),
+  searchBy: z.enum(['companyName', 'name', 'email']).optional(),
+  keyword: z.string().optional(),
 });
 
 export type CreateCompanyInput = z.infer<typeof createCompanySchema>;
 export type UpdateCompanyInput = z.infer<typeof updateCompanySchema>;
 export type CompanyQueryParams = z.infer<typeof companyQuerySchema>;
+export type CompanyUsersQueryParams = z.infer<typeof companyUsersQuerySchema>;

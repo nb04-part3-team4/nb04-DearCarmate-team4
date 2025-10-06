@@ -25,14 +25,28 @@ export class CompanyRepository {
     });
   }
 
-  async findAll(filter?: CompanyQueryParams): Promise<Company[]> {
-    return await prisma.company.findMany({
-      where: {
-        ...(filter?.companyCode && { companyCode: filter.companyCode }),
-        ...(filter?.name && { name: { contains: filter.name } }),
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+  async findAll(
+    params: CompanyQueryParams,
+  ): Promise<{ data: Company[]; total: number }> {
+    const { page, pageSize, searchBy, keyword } = params;
+    const skip = (page - 1) * pageSize;
+
+    const where =
+      searchBy === 'companyName' && keyword
+        ? { name: { contains: keyword } }
+        : {};
+
+    const [data, total] = await Promise.all([
+      prisma.company.findMany({
+        where,
+        skip,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.company.count({ where }),
+    ]);
+
+    return { data, total };
   }
 
   async update(id: number, data: UpdateCompanyInput): Promise<Company> {
