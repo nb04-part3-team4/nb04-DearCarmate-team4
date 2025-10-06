@@ -15,7 +15,7 @@ export const errorHandler = (
   req: Request,
   res: Response,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  next: NextFunction
+  next: NextFunction,
 ): void => {
   console.error('❌ Error:', {
     name: err.name,
@@ -84,7 +84,10 @@ export const errorHandler = (
 
   const errorResponse: ErrorResponse = {
     status: 'error',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error',
+    message:
+      process.env.NODE_ENV === 'development'
+        ? err.message
+        : 'Internal server error',
   };
 
   if (process.env.NODE_ENV === 'development') {
