@@ -1,4 +1,7 @@
-import { userRepository, UpdateUserData } from '@/repositories/user.repository';
+import {
+  userRepository,
+  UpdateUserInput,
+} from '@/repositories/user.repository';
 import { companyRepository } from '@/repositories/company.repository';
 import { hashPassword, verifyPassword } from '@/utils/password';
 import {
@@ -146,7 +149,7 @@ export class UserService {
     }
 
     // 3. 업데이트할 데이터 준비
-    const updateData: UpdateUserData = {};
+    const updateData: UpdateUserInput = {};
 
     if (newPassword) {
       updateData.password = await hashPassword(newPassword);

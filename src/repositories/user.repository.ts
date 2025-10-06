@@ -1,7 +1,7 @@
 import prisma from '@/utils/prisma';
 import { User } from '@prisma/client';
 
-export interface CreateUserData {
+export interface CreateUserInput {
   email: string;
   password: string;
   name: string;
@@ -11,7 +11,7 @@ export interface CreateUserData {
   companyId: number;
 }
 
-export interface UpdateUserData {
+export interface UpdateUserInput {
   password?: string;
   name?: string;
   phoneNumber?: string;
@@ -19,7 +19,7 @@ export interface UpdateUserData {
 }
 
 export class UserRepository {
-  async create(data: CreateUserData): Promise<User> {
+  async create(data: CreateUserInput): Promise<User> {
     return await prisma.user.create({
       data,
     });
@@ -43,7 +43,7 @@ export class UserRepository {
     });
   }
 
-  async update(id: number, data: UpdateUserData): Promise<User> {
+  async update(id: number, data: UpdateUserInput): Promise<User> {
     return await prisma.user.update({
       where: { id },
       data,
