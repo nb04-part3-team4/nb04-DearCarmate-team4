@@ -1,8 +1,8 @@
 import express, { Application } from 'express';
 import cors from 'cors';
-import { errorHandler, notFoundHandler } from '@/middlewares/error-handler
-import carRouter from '@/routes/cars-router.js';
-import imageRouter from '@/routes/images-router.js';
+import { errorHandler, notFoundHandler } from '@/middlewares/error-handler.js';
+// import carRouter from '@/routes/cars.routes';
+import imageRouter from '@/routes/images.routes.js';
 import authRoutes from '@/routes/auth.routes';
 import userRoutes from '@/routes/user.routes';
 
@@ -13,6 +13,12 @@ app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 app.use(express.urlencoded({ extended: true }));
 
+// API Routes
+// app.use('/cars', carRouter);
+app.use('/images', imageRouter);
+app.use('/auth', authRoutes);
+app.use('/users', userRoutes);
+
 app.get('/health', (_req, res) => {
   res.status(200).json({
     status: 'OK',
@@ -20,12 +26,6 @@ app.get('/health', (_req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
-
-// API Routes
-app.use('/cars', carRouter);
-app.use('/images', imageRouter);
-app.use('/auth', authRoutes);
-app.use('/users', userRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

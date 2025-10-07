@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import ImageService from '@/services/images-service.js';
+import ImageService from '@/services/images.service.js';
 import { imageSchema } from '../types/images.schema.js';
 
 class ImageController {

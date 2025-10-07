@@ -18,6 +18,11 @@ router.patch('/me', authMiddleware, (req, res, next) =>
   userController.updateMe(req, res, next),
 );
 
+// DELETE /users/me - 회원 탈퇴 (인증 필요)
+router.delete('/me', authMiddleware, (req, res, next) =>
+  userController.deleteMe(req, res, next),
+);
+
 // GET /users/:userId - 특정 유저 조회 (인증 + 관리자 권한 필요)
 router.get('/:userId', authMiddleware, adminGuard, (req, res, next) =>
   userController.getUserById(req, res, next),
