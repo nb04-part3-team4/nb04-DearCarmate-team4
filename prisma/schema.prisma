@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider          = "postgresql"
-  url               = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum CarType {
@@ -167,14 +167,14 @@ model Alarm {
 // 계약서
 model ContractDocument {
   id         Int      @id @default(autoincrement())
-  contractId Int      @map("contract_id")
+  contractId Int?     @map("contract_id")
   fileName   String   @map("file_name")
-  fileUrl    String?  @map("file_url")
-  fileSize   Int?     @map("file_size")
+  fileUrl    String   @map("file_url")
+  fileSize   Int      @map("file_size")
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  contract Contract? @relation(fields: [contractId], references: [id], onDelete: Cascade)
 
   @@map("contract_document")
 }
