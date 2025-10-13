@@ -18,12 +18,19 @@ const getContractDocuments: RequestHandler = async (req, res, next) => {
 
   const { page, pageSize, searchBy, keyword } = validationResult.data;
 
+  if (!req.user) {
+    return next(new Error('Unauthorized'));
+  }
+
+  const userId = req.user.userId;
+
   try {
     const documents = await contractDocumentService.getContractDocuments({
       page,
       pageSize,
       searchBy,
       keyword,
+      userId,
     });
 
     res.status(200).json(documents);
@@ -33,8 +40,18 @@ const getContractDocuments: RequestHandler = async (req, res, next) => {
 };
 
 const getContractDrafts: RequestHandler = async (req, res, next) => {
+  if (!req.user) {
+    return next(new Error('Unauthorized'));
+  }
+
+  const userId = req.user.userId;
+
   try {
-    const drafts = await contractDocumentService.getContractDrafts();
+    const drafts = await contractDocumentService.getContractDrafts({ userId });
+
+    if (!drafts || drafts.length === 0) {
+      return next(new Error('No drafts found'));
+    }
 
     res.status(200).json(drafts);
   } catch (error) {

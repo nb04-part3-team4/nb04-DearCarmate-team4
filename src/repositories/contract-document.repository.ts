@@ -5,20 +5,23 @@ const getContractDocuments = async ({
   pageSize,
   searchBy,
   keyword,
+  userId,
 }: {
   page: number;
   pageSize: number;
   searchBy?: 'contractName' | 'userName' | 'carNumber';
   keyword?: string;
+  userId: number;
 }) => {
   const contracts = await prisma.contract.findMany({
     where:
       searchBy && keyword
         ? {
             [searchBy]: { contains: keyword },
+            userId: userId,
           }
         : {
-            // No filtering if searchBy or keyword is not provided
+            userId: userId,
           },
     skip: (page - 1) * pageSize,
     take: pageSize,
@@ -27,7 +30,14 @@ const getContractDocuments = async ({
   return contracts;
 };
 
-const getContractDrafts = async () => {};
+const getContractDrafts = async ({ userId }: { userId: number }) => {
+  const drafts = await prisma.contract.findMany({
+    where: { userId, status: 'DRAFT' }, // 검증 필요
+    select: { id: true, contractName: true },
+  });
+
+  return drafts;
+};
 
 const uploadContractDocument = async ({
   fileUrl,
