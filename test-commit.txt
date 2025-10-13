@@ -1,0 +1,2 @@
+# Test commit to verify husky pre-commit hook
+This file tests that all tests must pass before committing.

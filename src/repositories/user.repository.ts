@@ -95,6 +95,7 @@ export class UserRepository {
           phoneNumber: true,
           imageUrl: true,
           isAdmin: true,
+          companyId: true,
           createdAt: true,
           updatedAt: true,
         },
