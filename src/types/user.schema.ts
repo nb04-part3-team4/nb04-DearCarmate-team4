@@ -10,7 +10,7 @@ export const signupSchema = z
     passwordConfirmation: z
       .string()
       .min(1, 'Password confirmation is required'),
-    company: z.string().min(1, 'Company is required'),
+    companyName: z.string().min(1, 'Company is required'),
     companyCode: z.string().min(1, 'Company code is required'),
   })
   .refine((data) => data.password === data.passwordConfirmation, {
