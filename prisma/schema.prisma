@@ -7,6 +7,18 @@ datasource db {
   url               = env("DATABASE_URL")
 }
 
+enum CarType {
+  COMPACT
+  SEDAN
+  SUV
+}
+
+enum CarStatus {
+  possession
+  contractProceeding
+  contractCompleted
+}
+
 // 회사
 model Company {
   id          Int      @id @default(autoincrement())
@@ -47,20 +59,20 @@ model User {
 
 // 차량
 model Car {
-  id                Int      @id @default(autoincrement())
-  modelId           Int      @map("model_id")
-  carNumber         String   @unique @map("car_number")
-  manufacturingYear Int      @map("manufacturing_year")
-  mileage           Int      @default(0)
+  id                Int       @id @default(autoincrement())
+  modelId           Int       @map("model_id")
+  carNumber         String    @unique @map("car_number")
+  manufacturingYear Int       @map("manufacturing_year")
+  mileage           Int       @default(0)
   price             Int
-  accidentCount     Int      @default(0) @map("accident_count")
+  accidentCount     Int       @default(0) @map("accident_count")
   explanation       String?
-  accidentDetails   String?  @map("accident_details")
-  status            String   @default("possession") // possession, contractProceeding, contractCompleted
-  imageUrl          String?  @map("image_url")
-  companyId         Int      @map("company_id")
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
+  accidentDetails   String?   @map("accident_details")
+  status            CarStatus @default(possession) // possession, contractProceeding, contractCompleted
+  imageUrl          String?   @map("image_url")
+  companyId         Int       @map("company_id")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
 
   company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
   model     CarModel   @relation(fields: [modelId], references: [id])
@@ -74,7 +86,7 @@ model CarModel {
   id           Int    @id @default(autoincrement())
   manufacturer String
   model        String
-  type         String // SEDAN, SUV, TRUCK, etc.
+  type         CarType // SEDAN, SUV, COMPACT
 
   cars Car[]
 
