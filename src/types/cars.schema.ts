@@ -1,11 +1,13 @@
 import { CarStatus } from '@prisma/client';
 import z from 'zod';
 
+export const SEARCH_BY = ['carNumber', 'model'] as const;
+
 export const carsQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   pageSize: z.coerce.number().int().positive().max(100).default(10),
   status: z.enum(CarStatus).optional(),
-  searchBy: z.enum(['carNumber', 'model']).optional(),
+  searchBy: z.enum(SEARCH_BY).optional(),
   keyword: z.string().optional(),
 });
 
@@ -28,4 +30,27 @@ export const carsBodySchema = z.object({
     .string()
     .optional()
     .transform((val) => val || null),
+});
+
+// 응답 스키마 + 타입 파생
+export const carResponseSchema = carsBodySchema.extend({
+  id: z.number().int().positive(),
+  type: z.string(),
+  status: z.enum(CarStatus),
+});
+
+export const getCarsResponseSchema = z.object({
+  currentPage: z.number().int().nonnegative(),
+  totalPages: z.number().int().nonnegative(),
+  totalItemCount: z.number().int().nonnegative(),
+  data: z.array(carResponseSchema),
+});
+
+export const getCarModelsResponseSchema = z.object({
+  data: z.array(
+    z.object({
+      manufacturer: z.string(),
+      model: z.array(z.string()),
+    }),
+  ),
 });

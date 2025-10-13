@@ -219,14 +219,14 @@ class CarService {
   }: GetListQuery) {
     const skip = (page - 1) * pageSize;
     const take = pageSize;
-    const where = {
+    const where: Prisma.CarWhereInput = {
       ...(status && { status }),
-      ...(keyword &&
-        searchBy && {
-          [searchBy]: {
-            contains: keyword,
-          },
-        }),
+      ...(keyword && searchBy === 'carNumber'
+        ? { carNumber: { contains: keyword, mode: 'insensitive' } }
+        : {}),
+      ...(keyword && searchBy === 'model'
+        ? { model: { model: { contains: keyword, mode: 'insensitive' } } }
+        : {}),
     };
     return { skip, take, where };
   }

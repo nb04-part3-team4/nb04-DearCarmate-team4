@@ -1,6 +1,8 @@
 import { CarStatus, Prisma } from '@prisma/client';
+import z from 'zod';
+import { carsBodySchema, SEARCH_BY } from './cars.schema.js';
 
-export type SearchBy = 'carNumber' | 'model';
+export type SearchBy = (typeof SEARCH_BY)[number];
 
 export interface CarId {
   carId: number;
@@ -17,17 +19,7 @@ export interface GetListQuery extends Page {
   keyword?: string;
 }
 
-export interface BaseCarDto {
-  carNumber: string;
-  manufacturer: string;
-  model: string;
-  manufacturingYear: number;
-  mileage: number;
-  price: number;
-  accidentCount: number;
-  explanation: string | null;
-  accidentDetails: string | null;
-}
+export type BaseCarDto = z.infer<typeof carsBodySchema>;
 
 export interface RawCarCsvData {
   carNumber: string;
