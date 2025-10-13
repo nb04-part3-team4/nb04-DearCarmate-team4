@@ -29,7 +29,7 @@ describe('UserService', () => {
         name: 'New User',
         employeeNumber: 'EMP002',
         phoneNumber: '010-1234-5678',
-        company: 'User Test Company',
+        companyName: 'User Test Company',
         companyCode: companyCode,
       };
 
@@ -51,7 +51,7 @@ describe('UserService', () => {
         passwordConfirmation: 'password123',
         name: 'New User',
         employeeNumber: 'EMP002',
-        company: 'Invalid Company',
+        companyName: 'Invalid Company',
         companyCode: 'INVALID',
       };
 
@@ -73,7 +73,7 @@ describe('UserService', () => {
         passwordConfirmation: 'password123',
         name: 'Duplicate User',
         employeeNumber: 'EMP004',
-        company: 'User Test Company',
+        companyName: 'User Test Company',
         companyCode: companyCode,
       };
 
