@@ -11,12 +11,14 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
+    "test:cloudinary:vitest": "vitest run src/tests/integration/cloudinary.test.ts",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",
     "typecheck": "tsc --noEmit",
     "prepare": "husky || true",
-    "db:setup": "npx prisma migrate deploy && npx prisma db seed"
+    "db:setup": "npx prisma migrate deploy && npx prisma db seed",
+    "test:cloudinary": "tsx scripts/test-cloudinary.ts"
   },
   "lint-staged": {
     "*.ts": [

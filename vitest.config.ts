@@ -6,6 +6,16 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     setupFiles: ['./src/tests/setup.ts'],
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/cloudinary.test.ts', // 실제 API를 사용하므로 제외
+    ],
+    server: {
+      deps: {
+        inline: ['csv-parser'],
+      },
+    },
     pool: 'forks',
     poolOptions: {
       threads: {
