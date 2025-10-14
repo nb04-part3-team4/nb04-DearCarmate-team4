@@ -1,5 +1,5 @@
 import multer from 'multer';
 
-const upload = multer({ dest: 'uploads/' });
+export const uploadImage = multer({ dest: 'uploads/' });
 
-export default upload;
+export const uploadCsv = multer({ storage: multer.memoryStorage() });

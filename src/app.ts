@@ -2,6 +2,7 @@ import express, { Application } from 'express';
 import cors from 'cors';
 import { errorHandler, notFoundHandler } from '@/middlewares/error-handler.js';
 import imageRouter from '@/routes/images.routes.js';
+import carRouter from '@/routes/cars.routes.js';
 import authRoutes from '@/routes/auth.routes.js';
 import userRoutes from '@/routes/user.routes.js';
 import adminRoutes from '@/routes/admin.routes.js';
@@ -20,6 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 // API Routes
+app.use('/cars', carRouter);
 app.use('/images', imageRouter);
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
