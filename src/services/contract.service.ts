@@ -1,7 +1,7 @@
 import { contractRepository } from '@/repositories/contract.repository';
-// import { carRepository } from '@/repositories/car.repository';
-// import { customerRepository } from '@/repositories/customer.repository';
-import { ConflictError, NotFoundError } from '@/utils/custom-error';
+import { carRepository } from '@/repositories/car.repository';
+import { customerRepository } from '@/repositories/customer.repository';
+import { NotFoundError } from '@/utils/custom-error';
 import { meetingRepository } from '@/repositories/meeting.repository';
 import { alarmRepository } from '@/repositories/alarm.repository';
 import { CreateContractDto } from '@/types/contracts.schema';
@@ -9,7 +9,6 @@ import {
   UpdateContractRequestDto,
   ContractDetailResponseDto,
 } from '@/dtos/contract.dto';
-import { ContractWithRelations } from '@/types/contract.type';
 import { userRepository } from '@/repositories/user.repository';
 import prisma from '@/utils/prisma';
 
@@ -30,7 +29,7 @@ export class ContractService {
     }
 
     const contractPrice = existingCar.price;
-    const companyId = existingCar.company_id;
+    const companyId = existingCar.companyId;
     const contractName = 'TEMP';
 
     const finalContract = await prisma.$transaction(async (tx) => {
@@ -66,7 +65,11 @@ export class ContractService {
         {
           user: true,
           customer: true,
-          car: true,
+          car: {
+            include: {
+              model: true,
+            },
+          },
           meetings: { include: { alarms: true } },
         },
       );
@@ -84,12 +87,12 @@ export class ContractService {
         : null,
       contractPrice: finalContract.contractPrice,
 
-      user: { id: finalContract.userId, name: finalContract.userId.name },
+      user: { id: finalContract.user.id, name: finalContract.user.name },
       customer: {
         id: finalContract.customer.id,
         name: finalContract.customer.name,
       },
-      car: { id: finalContract.car.id, model: finalContract.car.model },
+      car: { id: finalContract.car.id, model: finalContract.car.model.model },
 
       // meetings DTO 변환
       meetings: finalContract.meetings.map((m) => ({
@@ -161,7 +164,11 @@ export class ContractService {
       const finalContract = await contractRepository.findById(contractId, {
         user: true,
         customer: true,
-        car: true,
+        car: {
+          include: {
+            model: true,
+          },
+        },
         meetings: { include: { alarms: true } },
       });
       if (!finalContract) {
@@ -171,24 +178,28 @@ export class ContractService {
       return finalContract;
     });
 
-    const updatedContract = updatedContractDBResult as ContractWithRelations;
-
     return {
-      id: updatedContract.id,
-      status: updatedContract.status,
-      resolutionDate: updatedContract.resolutionDate
-        ? updatedContract.resolutionDate.toISOString()
+      id: updatedContractDBResult.id,
+      status: updatedContractDBResult.status,
+      resolutionDate: updatedContractDBResult.resolutionDate
+        ? updatedContractDBResult.resolutionDate.toISOString()
         : null,
-      contractPrice: updatedContract.contractPrice,
+      contractPrice: updatedContractDBResult.contractPrice,
 
-      user: { id: updatedContract.user.id, name: updatedContract.user.name },
-      customer: {
-        id: updatedContract.customer.id,
-        name: updatedContract.customer.name,
+      user: {
+        id: updatedContractDBResult.user.id,
+        name: updatedContractDBResult.user.name,
       },
-      car: { id: updatedContract.car.id, model: updatedContract.car.model },
+      customer: {
+        id: updatedContractDBResult.customer.id,
+        name: updatedContractDBResult.customer.name,
+      },
+      car: {
+        id: updatedContractDBResult.car.id,
+        model: updatedContractDBResult.car.model.model,
+      },
 
-      meetings: updatedContract.meetings.map((m) => ({
+      meetings: updatedContractDBResult.meetings.map((m) => ({
         date: m.date.toISOString(),
         alarms: m.alarms.map((a) => a.alarmTime.toISOString()),
       })),

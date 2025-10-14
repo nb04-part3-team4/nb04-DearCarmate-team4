@@ -1,6 +1,5 @@
 import { Meeting, Prisma } from '@prisma/client';
-import prisma from '@/utils/prisma';
-import { TxClient } from '@/types/contract.type'; 
+import { TxClient } from '@/types/contract.type';
 
 export class MeetingRepository {
   async create(

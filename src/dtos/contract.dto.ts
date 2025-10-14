@@ -1,15 +1,20 @@
 import { UserResponseDto } from '@/dtos/user.dto';
-// import { CustomerResponseDto } from '@/dtos/customer.dto';
-// import { CarResponseDto } from '@/dtos/car.dto'; 
 import { CreateContractDto, UpdateContractDto } from '@/types/contracts.schema';
-
 
 export type CreateContractRequestDto = CreateContractDto;
 export type UpdateContractRequestDto = UpdateContractDto;
 
 export type BaseUserDto = Pick<UserResponseDto, 'id' | 'name'>;
-// export type BaseCustomerDto = Pick<CustomerResponseDto, 'id' | 'name'>;
-// export type BaseCarDto = Pick<CarResponseDto, 'id' | 'model'>;
+
+export interface BaseCustomerDto {
+  id: number;
+  name: string;
+}
+
+export interface BaseCarDto {
+  id: number;
+  model: string;
+}
 
 export interface MeetingResponseDto {
   date: string;

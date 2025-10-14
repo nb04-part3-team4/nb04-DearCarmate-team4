@@ -4,7 +4,11 @@ export type ContractWithRelations = Prisma.ContractGetPayload<{
   include: {
     user: true;
     customer: true;
-    car: true;
+    car: {
+      include: {
+        model: true;
+      };
+    };
     meetings: {
       include: { alarms: true };
     };

@@ -5,7 +5,7 @@ import type {
   UpdateContractBaseData,
   ContractWithRelations,
 } from '@/types/contract.type';
-import { Contract, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 export class ContractRepository {
   async create(
@@ -17,7 +17,11 @@ export class ContractRepository {
       include: {
         user: true,
         customer: true,
-        car: true,
+        car: {
+          include: {
+            model: true,
+          },
+        },
         meetings: {
           include: { alarms: true },
         },
@@ -25,14 +29,14 @@ export class ContractRepository {
     });
   }
 
-  async findById(
+  async findById<T extends Prisma.ContractInclude>(
     id: number,
-    include?: Prisma.ContractInclude,
-  ): Promise<Contract | null> {
-    return await prisma.contract.findUnique({
+    include?: T,
+  ): Promise<Prisma.ContractGetPayload<{ include: T }> | null> {
+    return (await prisma.contract.findUnique({
       where: { id },
       include,
-    });
+    })) as Prisma.ContractGetPayload<{ include: T }> | null;
   }
 
   async update(

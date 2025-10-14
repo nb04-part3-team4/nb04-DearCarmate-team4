@@ -1,10 +1,10 @@
-import { Alarm, Prisma } from '@prisma/client';
-import { TxClient } from '@/types/contract.type'; 
+import { Alarm } from '@prisma/client';
+import { TxClient } from '@/types/contract.type';
 
 export class AlarmRepository {
   async create(
     tx: TxClient,
-    data: { meetingId: number; alarmTime: string }
+    data: { meetingId: number; alarmTime: string },
   ): Promise<Alarm> {
     return await tx.alarm.create({
       data: {
