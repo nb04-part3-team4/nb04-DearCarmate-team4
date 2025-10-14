@@ -9,7 +9,7 @@ fi
 
 # Run all tests
 echo "🧪 Running tests before commit..."
-NODE_ENV=test DATABASE_URL="postgresql://project_2:project_2@localhost:5432/project_2_test?schema=public" npm run test
+npm run test
 
 # If tests fail, prevent commit
 if [ $? -ne 0 ]; then

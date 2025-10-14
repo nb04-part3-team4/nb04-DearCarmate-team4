@@ -25,7 +25,7 @@ export const carsBodySchema = z.object({
   manufacturingYear: z.number().int().positive(),
   mileage: z.number().int().positive(),
   price: z.number().int().positive(),
-  accidentCount: z.number().int().positive(),
+  accidentCount: z.number().int().nonnegative(),
   explanation: z
     .string()
     .optional()

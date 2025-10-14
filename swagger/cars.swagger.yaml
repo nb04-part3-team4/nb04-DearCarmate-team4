@@ -1,0 +1,346 @@
+tags:
+  - name: Cars
+    description: 차량 관련 API
+
+paths:
+  /cars:
+    get:
+      tags:
+        - Cars
+      summary: 차량 목록 조회
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: 페이지 번호
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            default: 10
+          description: 페이지당 차량 수
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [possession, contractProceeding, contractCompleted]
+          description: 차량 상태
+        - in: query
+          name: searchBy
+          schema:
+            type: string
+            enum: [carNumber, model]
+          description: 검색 기준
+        - in: query
+          name: keyword
+          schema:
+            type: string
+          description: 검색어
+      responses:
+        '200':
+          description: 차량 목록 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCarsResponseSchema'
+        '401':
+          description: 권한 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_Unauthorized'
+    post:
+      tags:
+        - Cars
+      summary: 차량 등록
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CarsBodySchema'
+      responses:
+        '201':
+          description: 차량 등록 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarResponseSchema'
+        '400':
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_BadRequest'
+        '401':
+          description: 권한 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_Unauthorized'
+
+  /cars/upload:
+    post:
+      tags:
+        - Cars
+      summary: CSV 파일로 차량 대량 등록
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: 성공적으로 등록되었습니다.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 성공적으로 등록되었습니다.
+        '400':
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_BadRequest'
+        '401':
+          description: 권한 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_Unauthorized'
+
+  /cars/models:
+    get:
+      tags:
+        - Cars
+      summary: 등록된 모든 차량 모델 조회
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 차량 모델 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCarModelsResponseSchema'
+        '401':
+          description: 권한 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_Unauthorized'
+
+  /cars/{carId}:
+    get:
+      tags:
+        - Cars
+      summary: 특정 차량 상세 조회
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: carId
+          required: true
+          schema:
+            type: integer
+          description: 차량 ID
+      responses:
+        '200':
+          description: 차량 상세 정보 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarResponseSchema'
+        '401':
+          description: 권한 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_Unauthorized'
+        '404':
+          description: 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_NotFound'
+    patch:
+      tags:
+        - Cars
+      summary: 특정 차량 정보 수정
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: carId
+          required: true
+          schema:
+            type: integer
+          description: 차량 ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CarsBodySchema'
+      responses:
+        '200':
+          description: 차량 정보 수정 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarResponseSchema'
+        '400':
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_BadRequest'
+        '401':
+          description: 권한 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_Unauthorized'
+        '404':
+          description: 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_NotFound'
+    delete:
+      tags:
+        - Cars
+      summary: 특정 차량 삭제
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: carId
+          required: true
+          schema:
+            type: integer
+          description: 차량 ID
+      responses:
+        '200':
+          description: 차량 삭제 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 차량 삭제 성공
+        '401':
+          description: 권한 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_Unauthorized'
+        '404':
+          description: 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_NotFound'
+
+components:
+  schemas:
+    CarsBodySchema:
+      type: object
+      properties:
+        carNumber:
+          type: string
+          example: '12가1234'
+        manufacturer:
+          type: string
+          example: '기아'
+        model:
+          type: string
+          example: 'K5'
+        manufacturingYear:
+          type: integer
+          example: 2022
+        mileage:
+          type: integer
+          example: 30000
+        price:
+          type: integer
+          example: 28000000
+        accidentCount:
+          type: integer
+          example: 0
+        explanation:
+          type: string
+          example: '신차급 컨디션입니다.'
+        accidentDetails:
+          type: string
+          nullable: true
+          example: ''
+
+    CarResponseSchema:
+      allOf:
+        - $ref: '#/components/schemas/CarsBodySchema'
+        - type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            type:
+              type: string
+              example: 'SEDAN'
+            status:
+              type: string
+              enum: [possession, contractProceeding, contractCompleted]
+              example: 'possession'
+
+    GetCarsResponseSchema:
+      type: object
+      properties:
+        currentPage:
+          type: integer
+          example: 1
+        totalPages:
+          type: integer
+          example: 5
+        totalItemCount:
+          type: integer
+          example: 50
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CarResponseSchema'
+
+    GetCarModelsResponseSchema:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              manufacturer:
+                type: string
+                example: '기아'
+              model:
+                type: array
+                items:
+                  type: string
+                example: ['K3', 'K5', 'K7', '쏘렌토', '모닝']
