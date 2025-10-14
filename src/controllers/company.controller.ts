@@ -8,6 +8,7 @@ import {
 } from '@/types/company.schema';
 import { BadRequestError } from '@/utils/custom-error';
 
+
 export class CompanyController {
   async createCompany(
     req: Request,
