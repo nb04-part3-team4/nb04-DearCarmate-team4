@@ -1,12 +1,16 @@
-import { CarStatus } from '@prisma/client';
 import z from 'zod';
 
 export const SEARCH_BY = ['carNumber', 'model'] as const;
+export const CAR_STATUS_VALUES = [
+  'possession',
+  'contractProceeding',
+  'contractCompleted',
+] as const;
 
 export const carsQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   pageSize: z.coerce.number().int().positive().max(100).default(10),
-  status: z.enum(CarStatus).optional(),
+  status: z.enum(CAR_STATUS_VALUES).optional(),
   searchBy: z.enum(SEARCH_BY).optional(),
   keyword: z.string().optional(),
 });
@@ -36,7 +40,7 @@ export const carsBodySchema = z.object({
 export const carResponseSchema = carsBodySchema.extend({
   id: z.number().int().positive(),
   type: z.string(),
-  status: z.enum(CarStatus),
+  status: z.enum(CAR_STATUS_VALUES),
 });
 
 export const getCarsResponseSchema = z.object({

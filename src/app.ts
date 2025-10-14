@@ -3,10 +3,12 @@ import cors from 'cors';
 import { errorHandler, notFoundHandler } from '@/middlewares/error-handler.js';
 import imageRouter from '@/routes/images.routes.js';
 import carRouter from '@/routes/cars.routes.js';
-import authRoutes from '@/routes/auth.routes';
-import userRoutes from '@/routes/user.routes';
-import adminRoutes from '@/routes/admin.routes';
-import companyRoutes from '@/routes/company.routes';
+import authRoutes from '@/routes/auth.routes.js';
+import userRoutes from '@/routes/user.routes.js';
+import adminRoutes from '@/routes/admin.routes.js';
+import companyRoutes from '@/routes/company.routes.js';
+import swaggerUi from 'swagger-ui-express';
+import { specs } from '@/swagger.config.js';
 
 const app: Application = express();
 
@@ -14,6 +16,9 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 app.use(express.urlencoded({ extended: true }));
+
+// Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 // API Routes
 app.use('/cars', carRouter);

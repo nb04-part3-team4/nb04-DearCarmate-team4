@@ -4,6 +4,7 @@ import { authMiddleware } from '@/middlewares/auth';
 import { adminGuard } from '@/middlewares/admin-guard';
 
 const router = Router();
+
 // POST /companies - 회사 생성 (인증 + 관리자 권한 필요)
 router.post('/', authMiddleware, adminGuard, (req, res, next) =>
   companyController.createCompany(req, res, next),

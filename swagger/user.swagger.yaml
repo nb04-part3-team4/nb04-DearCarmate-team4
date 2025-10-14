@@ -1,0 +1,269 @@
+tags:
+  - name: Users
+    description: 사용자 관련 API
+
+paths:
+  /users:
+    post:
+      summary: 회원가입
+      tags: [Users]
+      description: 새로운 사용자를 생성합니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+      responses:
+        '201':
+          description: 회원가입 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserBase'
+        '400':
+          description: 잘못된 요청 (비밀번호 불일치 등)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 비밀번호와 비밀번호 확인이 일치하지 않습니다.
+        '409':
+          description: 이미 존재하는 이메일
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 이미 존재하는 이메일입니다.
+
+  /users/me:
+    get:
+      summary: 내 정보 조회
+      tags: [Users]
+      description: 현재 로그인된 사용자의 정보를 조회합니다.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 내 정보 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserBase'
+        '400':
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_BadRequest'
+        '401':
+          description: 인증 실패
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_Unauthorized'
+        '404':
+          description: 존재하지 않는 유저
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_NotFound'
+
+    patch:
+      summary: 내 정보 수정
+      tags: [Users]
+      description: 현재 로그인된 사용자의 정보를 수정합니다.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMeRequest'
+      responses:
+        '200':
+          description: 정보 수정 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserBase'
+        '400':
+          description: 잘못된 요청 (비밀번호 불일치 또는 현재 비밀번호 오류)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 현재 비밀번호가 맞지 않습니다.
+        '401':
+          description: 인증 실패
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_Unauthorized'
+        '404':
+          description: 존재하지 않는 유저
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_NotFound'
+
+    delete:
+      summary: 회원 탈퇴
+      tags: [Users]
+      description: 현재 로그인된 사용자를 탈퇴 처리합니다.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 회원 탈퇴 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 유저 삭제 성공
+        '400':
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_BadRequest'
+        '401':
+          description: 인증 실패
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_Unauthorized'
+
+  /users/{userId}:
+    delete:
+      summary: 특정 유저 삭제 (관리자용)
+      tags: [Users]
+      description: 관리자 권한으로 특정 사용자를 ID로 삭제합니다.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: integer
+          required: true
+          description: 삭제할 사용자의 ID
+          example: 2
+      responses:
+        '200':
+          description: 사용자 삭제 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 유저 삭제 성공
+        '400':
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_BadRequest'
+        '401':
+          description: 권한 없음 (관리자가 아님)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 관리자 권한이 필요합니다.
+        '404':
+          description: 존재하지 않는 유저
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_NotFound'
+
+components:
+  schemas:
+    SignupRequest:
+      type: object
+      required:
+        - name
+        - email
+        - employeeNumber
+        - password
+        - passwordConfirmation
+        - companyCode
+        - companyName
+      properties:
+        name:
+          type: string
+          example: 홍길동
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        employeeNumber:
+          type: string
+          example: '20240001'
+        phoneNumber:
+          type: string
+          example: '010-1234-5678'
+        password:
+          type: string
+          format: password
+          example: password123
+        passwordConfirmation:
+          type: string
+          format: password
+          example: password123
+        companyName:
+          type: string
+          description: 회사 이름
+          example: 'User API Test Company'
+        companyCode:
+          type: string
+          description: 회사 코드
+          example: 'CODEIT'
+
+    UpdateMeRequest:
+      type: object
+      properties:
+        employeeNumber:
+          type: string
+          example: '20250001'
+        phoneNumber:
+          type: string
+          example: '010-9876-5432'
+        currentPassword:
+          type: string
+          format: password
+          description: 비밀번호 변경 시에만 필요
+          example: 'currentPassword123'
+        password:
+          type: string
+          format: password
+          description: 새 비밀번호
+          example: 'newPassword123!'
+        passwordConfirmation:
+          type: string
+          format: password
+          description: 새 비밀번호 확인
+          example: 'newPassword123!'
+        imageUrl:
+          type: string
+          format: uri
+          example: '/uploads/new-profile.jpg'

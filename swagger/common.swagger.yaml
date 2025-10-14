@@ -1,0 +1,104 @@
+components:
+  schemas:
+    # =============================================
+    #         Base Schemas
+    # =============================================
+    UserBase:
+      type: object
+      description: 기본 사용자 정보
+      properties:
+        id:
+          type: integer
+          description: 사용자 고유 ID
+          example: 1
+        name:
+          type: string
+          example: 홍길동
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        employeeNumber:
+          type: string
+          example: '20240001'
+        phoneNumber:
+          type: string
+          nullable: true
+          example: '010-1234-5678'
+        imageUrl:
+          type: string
+          format: uri
+          nullable: true
+          example: '/uploads/profile.jpg'
+        isAdmin:
+          type: boolean
+          example: false
+        company:
+          type: object
+          properties:
+            companyCode:
+              type: string
+              example: 'CODEIT'
+
+    # =============================================
+    #         Generic Responses
+    # =============================================
+    SuccessResponse_User:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+          $ref: '#/components/schemas/UserBase'
+
+    SuccessResponse_Login:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/UserBase'
+            accessToken:
+              type: string
+            refreshToken:
+              type: string
+
+    ErrorResponse_BadRequest:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 잘못된 요청입니다.
+
+    ErrorResponse_Unauthorized:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 로그인이 필요합니다.
+
+    ErrorResponse_NotFound:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 리소스를 찾을 수 없습니다.
+
+    SuccessResponse_RefreshToken:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+          type: object
+          properties:
+            accessToken:
+              type: string
+            refreshToken:
+              type: string

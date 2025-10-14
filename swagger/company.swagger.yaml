@@ -1,0 +1,346 @@
+tags:
+  - name: Companies
+    description: 회사 관련 API
+
+paths:
+  /companies:
+    post:
+      summary: 회사 등록
+      tags: [Companies]
+      description: 새로운 회사를 등록합니다. (관리자 권한 필요)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - companyName
+                - companyCode
+              properties:
+                companyName:
+                  type: string
+                  example: 코드잇
+                companyCode:
+                  type: string
+                  example: CODEIT
+      responses:
+        '201':
+          description: 회사 등록 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyResponse'
+        '400':
+          description: 잘못된 요청입니다
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_BadRequest'
+        '401':
+          description: 관리자 권한이 필요합니다
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 관리자 권한이 필요합니다
+
+    get:
+      summary: 회사 목록 조회
+      tags: [Companies]
+      description: 회사 목록을 조회합니다. (관리자 권한 필요)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: 현재 페이지 번호
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            default: 10
+          description: 페이지 당 아이템 수
+        - in: query
+          name: searchBy
+          schema:
+            type: string
+            enum: [companyName]
+          description: 검색 기준
+        - in: query
+          name: keyword
+          schema:
+            type: string
+          description: 검색어
+      responses:
+        '200':
+          description: 회사 목록 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  currentPage:
+                    type: integer
+                    example: 1
+                  totalPages:
+                    type: integer
+                    example: 2
+                  totalItemCount:
+                    type: integer
+                    example: 6
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CompanyResponse'
+        '400':
+          description: 잘못된 요청입니다
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_BadRequest'
+        '401':
+          description: 관리자 권한이 필요합니다
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 관리자 권한이 필요합니다
+
+  /companies/users:
+    get:
+      summary: 회사별 유저 조회
+      tags: [Companies]
+      description: 회사별로 유저 목록을 조회합니다. (관리자 권한 필요)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: 현재 페이지 번호
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            default: 10
+          description: 페이지 당 아이템 수
+        - in: query
+          name: searchBy
+          schema:
+            type: string
+            enum: [companyName, name, email]
+          description: 검색 기준
+        - in: query
+          name: keyword
+          schema:
+            type: string
+          description: 검색어
+      responses:
+        '200':
+          description: 회사별 유저 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  currentPage:
+                    type: integer
+                    example: 1
+                  totalPages:
+                    type: integer
+                    example: 2
+                  totalItemCount:
+                    type: integer
+                    example: 6
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CompanyUserResponse'
+        '400':
+          description: 잘못된 요청입니다
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_BadRequest'
+        '401':
+          description: 관리자 권한이 필요합니다
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 관리자 권한이 필요합니다
+
+  /companies/{companyId}:
+    patch:
+      summary: 회사 수정
+      tags: [Companies]
+      description: 회사 정보를 수정합니다. (관리자 권한 필요)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: companyId
+          required: true
+          schema:
+            type: integer
+          description: 회사 ID
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                companyName:
+                  type: string
+                  example: 코드잇 주식회사
+                companyCode:
+                  type: string
+                  example: CODEIT
+      responses:
+        '200':
+          description: 회사 수정 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyResponse'
+        '400':
+          description: 잘못된 요청입니다
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_BadRequest'
+        '401':
+          description: 관리자 권한이 필요합니다
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 관리자 권한이 필요합니다
+        '404':
+          description: 존재하지 않는 회사입니다
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 존재하지 않는 회사입니다
+
+    delete:
+      summary: 회사 삭제
+      tags: [Companies]
+      description: 회사를 삭제합니다. (관리자 권한 필요)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: companyId
+          required: true
+          schema:
+            type: integer
+          description: 회사 ID
+          example: 1
+      responses:
+        '200':
+          description: 회사 삭제 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 회사 삭제 성공
+        '400':
+          description: 잘못된 요청입니다
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_BadRequest'
+        '401':
+          description: 관리자 권한이 필요합니다
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 관리자 권한이 필요합니다
+        '404':
+          description: 존재하지 않는 회사입니다
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 존재하지 않는 회사입니다
+
+components:
+  schemas:
+    CompanyResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        companyName:
+          type: string
+          example: 코드잇
+        companyCode:
+          type: string
+          example: CODEIT
+        userCount:
+          type: integer
+          example: 3
+
+    CompanyUserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: 홍길동
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        employeeNumber:
+          type: string
+          example: '20240001'
+        phoneNumber:
+          type: string
+          example: '010-1234-5678'
+        company:
+          type: object
+          properties:
+            companyName:
+              type: string
+              example: 코드잇

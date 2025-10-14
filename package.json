@@ -11,12 +11,14 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
+    "test:cloudinary:vitest": "vitest run src/tests/integration/cloudinary.test.ts",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",
     "typecheck": "tsc --noEmit",
-    "prepare": "node -e \"try { require('husky') } catch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e }\"",
-    "db:setup": "npx prisma migrate deploy && npx prisma db seed"
+    "prepare": "husky || true",
+    "db:setup": "npx prisma migrate deploy && npx prisma db seed",
+    "test:cloudinary": "tsx scripts/test-cloudinary.ts"
   },
   "lint-staged": {
     "*.ts": [
@@ -39,6 +41,8 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
     "pg": "^8.16.3",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "zod": "^4.1.11"
   },
   "devDependencies": {
@@ -50,6 +54,8 @@
     "@types/node": "^24.6.0",
     "@types/pg": "^8.15.5",
     "@types/supertest": "^6.0.3",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "@typescript-eslint/eslint-plugin": "^8.45.0",
     "@typescript-eslint/parser": "^8.45.0",
     "@vitest/coverage-v8": "^3.2.4",
@@ -68,6 +74,6 @@
     "vitest": "^3.2.4"
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx seed/index.ts"
   }
 }

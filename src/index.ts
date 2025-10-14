@@ -19,7 +19,7 @@ const startServer = async () => {
 ╚═══════════════════════════════════════╝
       `);
       console.log(`📍 Health check: http://localhost:${PORT}/health`);
-      console.log(`📍 API base: http://localhost:${PORT}/api`);
+      console.log(`📍 API base: http://localhost:${PORT}/api-docs`);
     });
 
     const gracefulShutdown = async (signal: string) => {
