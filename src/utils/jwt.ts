@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 export interface JwtPayload {
   userId: number;
   email: string;
+  companyId: number;
 }
 
 const generateToken = (

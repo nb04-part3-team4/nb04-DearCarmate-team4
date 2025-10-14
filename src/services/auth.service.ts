@@ -34,6 +34,7 @@ export class AuthService {
     const payload: JwtPayload = {
       userId: user.id,
       email: user.email,
+      companyId: user.companyId,
     };
 
     // 4. 회사 정보 조회
@@ -82,6 +83,7 @@ export class AuthService {
       const payload: JwtPayload = {
         userId: user.id,
         email: user.email,
+        companyId: user.companyId,
       };
 
       const accessToken = generateAccessToken(payload);

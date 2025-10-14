@@ -1,18 +1,20 @@
 import { Prisma } from '@prisma/client';
 
+export const contractFullInclude = {
+  user: true,
+  customer: true,
+  car: {
+    include: {
+      model: true,
+    },
+  },
+  meetings: {
+    include: { alarms: true },
+  },
+} as const satisfies Prisma.ContractInclude;
+
 export type ContractWithRelations = Prisma.ContractGetPayload<{
-  include: {
-    user: true;
-    customer: true;
-    car: {
-      include: {
-        model: true;
-      };
-    };
-    meetings: {
-      include: { alarms: true };
-    };
-  };
+  include: typeof contractFullInclude;
 }>;
 
 export interface CreateContractData {

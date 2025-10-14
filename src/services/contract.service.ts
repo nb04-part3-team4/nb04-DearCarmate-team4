@@ -1,16 +1,19 @@
 import { contractRepository } from '@/repositories/contract.repository';
 import { carRepository } from '@/repositories/car.repository';
 import { customerRepository } from '@/repositories/customer.repository';
-import { NotFoundError } from '@/utils/custom-error';
+import { NotFoundError, ForbiddenError } from '@/utils/custom-error';
 import { meetingRepository } from '@/repositories/meeting.repository';
 import { alarmRepository } from '@/repositories/alarm.repository';
-import { CreateContractDto } from '@/types/contracts.schema';
+import { CreateContractDto, UpdateContractDto } from '@/types/contracts.schema';
 import {
-  UpdateContractRequestDto,
   ContractDetailResponseDto,
+  GetContractsResponseDto,
+  DeleteContractResponseDto,
 } from '@/dtos/contract.dto';
 import { userRepository } from '@/repositories/user.repository';
 import prisma from '@/utils/prisma';
+import { ContractWithRelations } from '@/types/contract.type';
+import { ContractMapper } from '@/utils/contract.mapper';
 
 export class ContractService {
   async createContract(
@@ -60,18 +63,11 @@ export class ContractService {
           }
         }
       }
+
+      // 트랜잭션 일관성: 같은 tx 내에서 최종 조회
       const contractWithRelations = await contractRepository.findById(
+        tx,
         createdContract.id,
-        {
-          user: true,
-          customer: true,
-          car: {
-            include: {
-              model: true,
-            },
-          },
-          meetings: { include: { alarms: true } },
-        },
       );
 
       if (!contractWithRelations) {
@@ -79,38 +75,29 @@ export class ContractService {
       }
       return contractWithRelations;
     });
-    return {
-      id: finalContract.id,
-      status: finalContract.status,
-      resolutionDate: finalContract.resolutionDate
-        ? finalContract.resolutionDate.toISOString()
-        : null,
-      contractPrice: finalContract.contractPrice,
 
-      user: { id: finalContract.user.id, name: finalContract.user.name },
-      customer: {
-        id: finalContract.customer.id,
-        name: finalContract.customer.name,
-      },
-      car: { id: finalContract.car.id, model: finalContract.car.model.model },
-
-      // meetings DTO 변환
-      meetings: finalContract.meetings.map((m) => ({
-        date: m.date.toISOString(),
-        alarms: m.alarms.map((a) => a.alarmTime.toISOString()),
-      })),
-    } as ContractDetailResponseDto;
+    // Single Responsibility: Mapper가 DTO 변환 담당
+    return ContractMapper.toDetailDto(finalContract);
   }
 
   async updateContract(
     contractId: number,
-    data: UpdateContractRequestDto,
+    data: UpdateContractDto,
+    requestUserId: number,
   ): Promise<ContractDetailResponseDto> {
     const { meetings, userId, customerId, carId, ...baseContractData } = data;
 
-    const existingContract = await contractRepository.findById(contractId);
+    const existingContract = await contractRepository.findById(
+      prisma,
+      contractId,
+    );
     if (!existingContract) {
-      throw new NotFoundError('존재하지 않는 계약입니다.');
+      throw new NotFoundError('존재하지 않는 계약입니다');
+    }
+
+    // 권한 검증: 담당자만 수정 가능
+    if (existingContract.userId !== requestUserId) {
+      throw new ForbiddenError('담당자만 수정이 가능합니다');
     }
 
     if (userId) {
@@ -161,16 +148,8 @@ export class ContractService {
         }
       }
 
-      const finalContract = await contractRepository.findById(contractId, {
-        user: true,
-        customer: true,
-        car: {
-          include: {
-            model: true,
-          },
-        },
-        meetings: { include: { alarms: true } },
-      });
+      // 트랜잭션 일관성: 같은 tx 내에서 최종 조회
+      const finalContract = await contractRepository.findById(tx, contractId);
       if (!finalContract) {
         throw new Error('업데이트 후 계약 정보를 찾을 수 없습니다.');
       }
@@ -178,32 +157,91 @@ export class ContractService {
       return finalContract;
     });
 
+    return ContractMapper.toDetailDto(updatedContractDBResult);
+  }
+
+  async getContracts(
+    companyId: number,
+    searchBy?: 'customerName' | 'userName',
+    keyword?: string,
+  ): Promise<GetContractsResponseDto> {
+    const contracts = await contractRepository.findAllByCompanyId(
+      companyId,
+      searchBy,
+      keyword,
+    );
+
+    // 상태별로 그룹화
+    const groupedContracts: Record<string, ContractWithRelations[]> = {
+      carInspection: [],
+      priceNegotiation: [],
+      contractDraft: [],
+      contractSuccessful: [],
+      contractFailed: [],
+    };
+
+    contracts.forEach((contract) => {
+      if (groupedContracts[contract.status]) {
+        groupedContracts[contract.status].push(contract);
+      }
+    });
+
     return {
-      id: updatedContractDBResult.id,
-      status: updatedContractDBResult.status,
-      resolutionDate: updatedContractDBResult.resolutionDate
-        ? updatedContractDBResult.resolutionDate.toISOString()
-        : null,
-      contractPrice: updatedContractDBResult.contractPrice,
+      carInspection: {
+        totalItemCount: groupedContracts.carInspection.length,
+        data: groupedContracts.carInspection.map((c) =>
+          ContractMapper.toListItemDto(c),
+        ),
+      },
+      priceNegotiation: {
+        totalItemCount: groupedContracts.priceNegotiation.length,
+        data: groupedContracts.priceNegotiation.map((c) =>
+          ContractMapper.toListItemDto(c),
+        ),
+      },
+      contractDraft: {
+        totalItemCount: groupedContracts.contractDraft.length,
+        data: groupedContracts.contractDraft.map((c) =>
+          ContractMapper.toListItemDto(c),
+        ),
+      },
+      contractSuccessful: {
+        totalItemCount: groupedContracts.contractSuccessful.length,
+        data: groupedContracts.contractSuccessful.map((c) =>
+          ContractMapper.toListItemDto(c),
+        ),
+      },
+      contractFailed: {
+        totalItemCount: groupedContracts.contractFailed.length,
+        data: groupedContracts.contractFailed.map((c) =>
+          ContractMapper.toListItemDto(c),
+        ),
+      },
+    };
+  }
 
-      user: {
-        id: updatedContractDBResult.user.id,
-        name: updatedContractDBResult.user.name,
-      },
-      customer: {
-        id: updatedContractDBResult.customer.id,
-        name: updatedContractDBResult.customer.name,
-      },
-      car: {
-        id: updatedContractDBResult.car.id,
-        model: updatedContractDBResult.car.model.model,
-      },
+  async deleteContract(
+    contractId: number,
+    requestUserId: number,
+  ): Promise<DeleteContractResponseDto> {
+    const existingContract = await contractRepository.findById(
+      prisma,
+      contractId,
+    );
+    if (!existingContract) {
+      throw new NotFoundError('존재하지 않는 계약입니다');
+    }
 
-      meetings: updatedContractDBResult.meetings.map((m) => ({
-        date: m.date.toISOString(),
-        alarms: m.alarms.map((a) => a.alarmTime.toISOString()),
-      })),
-    } as ContractDetailResponseDto;
+    // 권한 검증: 담당자만 삭제 가능
+    if (existingContract.userId !== requestUserId) {
+      throw new ForbiddenError('담당자만 삭제가 가능합니다');
+    }
+
+    await contractRepository.delete(contractId);
+
+    return {
+      message: '계약 삭제 성공',
+    };
   }
 }
 

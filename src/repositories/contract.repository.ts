@@ -6,6 +6,7 @@ import type {
   ContractWithRelations,
 } from '@/types/contract.type';
 import { Prisma } from '@prisma/client';
+import { contractFullInclude as fullInclude } from '@/types/contract.type';
 
 export class ContractRepository {
   async create(
@@ -14,29 +15,19 @@ export class ContractRepository {
   ): Promise<ContractWithRelations> {
     return await tx.contract.create({
       data,
-      include: {
-        user: true,
-        customer: true,
-        car: {
-          include: {
-            model: true,
-          },
-        },
-        meetings: {
-          include: { alarms: true },
-        },
-      },
+      include: fullInclude,
     });
   }
 
-  async findById<T extends Prisma.ContractInclude>(
+  // 트랜잭션 일관성: client를 인자로 받아 tx 내부에서도 같은 트랜잭션 사용
+  async findById(
+    client: TxClient | typeof prisma,
     id: number,
-    include?: T,
-  ): Promise<Prisma.ContractGetPayload<{ include: T }> | null> {
-    return (await prisma.contract.findUnique({
+  ): Promise<ContractWithRelations | null> {
+    return await client.contract.findUnique({
       where: { id },
-      include,
-    })) as Prisma.ContractGetPayload<{ include: T }> | null;
+      include: fullInclude,
+    });
   }
 
   async update(
@@ -57,6 +48,36 @@ export class ContractRepository {
     await tx.contract.update({
       where: { id },
       data: updateData,
+    });
+  }
+
+  async findAllByCompanyId(
+    companyId: number,
+    searchBy?: 'customerName' | 'userName',
+    keyword?: string,
+  ): Promise<ContractWithRelations[]> {
+    const where: Prisma.ContractWhereInput = {
+      companyId,
+      ...(searchBy === 'customerName' && keyword
+        ? { customer: { name: { contains: keyword, mode: 'insensitive' } } }
+        : {}),
+      ...(searchBy === 'userName' && keyword
+        ? { user: { name: { contains: keyword, mode: 'insensitive' } } }
+        : {}),
+    };
+
+    return await prisma.contract.findMany({
+      where,
+      include: fullInclude,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async delete(id: number): Promise<void> {
+    await prisma.contract.delete({
+      where: { id },
     });
   }
 }
