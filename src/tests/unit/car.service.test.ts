@@ -1,15 +1,18 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import carsService from '@/services/cars.service';
+import carsService from '@/features/cars/cars.service';
 import { createTestCompany, createTestUser } from '../helpers/test-data';
-import { BadRequestError, NotFoundError } from '@/middlewares/custom-error';
-import carModelRepository from '@/repositories/car-model.repository';
-import carRepository from '@/repositories/cars.repository';
+import {
+  BadRequestError,
+  NotFoundError,
+} from '@/shared/middlewares/custom-error';
+import carModelRepository from '@/features/cars/car-model.repository';
+import carRepository from '@/features/cars/cars.repository';
 import { CarType, CarStatus } from '@prisma/client';
-import type { CarWithModel } from '@/types/cars.type';
+import type { CarWithModel } from '@/features/cars/cars.type';
 
 // Mock repositories
-vi.mock('@/repositories/car-model.repository');
-vi.mock('@/repositories/cars.repository');
+vi.mock('@/features/cars/car-model.repository');
+vi.mock('@/features/cars/cars.repository');
 
 // Global helpers interface
 interface GlobalHelpers {

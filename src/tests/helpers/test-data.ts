@@ -1,5 +1,5 @@
-import prisma from '@/middlewares/prisma';
-import { hashPassword } from '@/middlewares/password';
+import prisma from '@/shared/middlewares/prisma';
+import { hashPassword } from '@/shared/middlewares/password';
 import type { Company, User, Car } from '@prisma/client';
 
 export async function createTestCompany(

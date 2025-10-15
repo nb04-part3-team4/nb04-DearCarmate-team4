@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { userService } from '@/services/user.service';
+import { userService } from '@/features/users/user.service';
 import { createTestCompany, createTestUser } from '../helpers/test-data';
 import {
   BadRequestError,
   NotFoundError,
   ConflictError,
-} from '@/middlewares/custom-error';
+} from '@/shared/middlewares/custom-error';
 
 describe('UserService', () => {
   let companyId: number;
