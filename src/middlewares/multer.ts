@@ -1,6 +1,7 @@
-import multer from 'multer';
+import multer, { FileFilterCallback } from 'multer';
 import fs from 'fs';
 import path from 'path';
+import { Request } from 'express';
 
 // Ensure the uploads directory exists
 const uploadDir = path.join(__dirname, '../../uploads');
@@ -14,7 +15,19 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + '-' + file.originalname);
-  }
+  },
 });
 
-export const upload = multer({ storage: storage });
+const fileFilter = (
+  req: Request,
+  file: Express.Multer.File,
+  cb: FileFilterCallback,
+) => {
+  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+    cb(null, true);
+  } else {
+    cb(new Error('jpg, png 파일만 업로드 가능합니다.'));
+  }
+};
+
+export const upload = multer({ storage, fileFilter });
