@@ -33,6 +33,10 @@ const getContractDocuments: RequestHandler = async (req, res, next) => {
       userId,
     });
 
+    if (!documents || documents.length === 0) {
+      return next(new Error('No documents found'));
+    }
+
     res.status(200).json(documents);
   } catch (error) {
     next(error);
