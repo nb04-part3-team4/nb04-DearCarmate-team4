@@ -1,4 +1,5 @@
 import prisma from '../utils/prisma';
+import type { GetContractDocumentsRequestDto } from '../dtos/contract-document.dto';
 
 const getContractDocuments = async ({
   page,
@@ -6,13 +7,7 @@ const getContractDocuments = async ({
   searchBy,
   keyword,
   userId,
-}: {
-  page: number;
-  pageSize: number;
-  searchBy?: 'contractName' | 'userName' | 'carNumber';
-  keyword?: string;
-  userId: number;
-}) => {
+}: GetContractDocumentsRequestDto) => {
   const contracts = await prisma.contract.findMany({
     where:
       searchBy && keyword

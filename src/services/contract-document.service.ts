@@ -1,26 +1,35 @@
 import * as contractDocumentRepository from '../repositories/contract-document.repository';
+import {
+  type GetContractDocumentsRequestDto,
+  type GetContractDocumentsResponseDto,
+  type GetContractDraftsResponseDto,
+  type UploadContractDocumentResponseDto,
+} from '../dtos/contract-document.dto';
 
-export const getContractDocuments = async (options: {
-  page: number;
-  pageSize: number;
-  searchBy?: 'contractName' | 'userName' | 'carNumber';
-  keyword?: string;
+export const getContractDocuments = async (
+  requestDto: GetContractDocumentsRequestDto,
+): Promise<GetContractDocumentsResponseDto> => {
+  const contracts =
+    await contractDocumentRepository.getContractDocuments(requestDto);
+
+  return contracts;
+};
+
+export const getContractDrafts = async ({
+  userId,
+}: {
   userId: number;
-}) => {
-  return await contractDocumentRepository.getContractDocuments({
-    page: options.page,
-    pageSize: options.pageSize,
-    searchBy: options.searchBy,
-    keyword: options.keyword,
-    userId: options.userId,
-  });
+}): Promise<GetContractDraftsResponseDto> => {
+  const drafts = await contractDocumentRepository.getContractDrafts({ userId });
+  return drafts.map((draft) => ({
+    id: draft.id,
+    contractName: draft.contractName,
+  }));
 };
 
-export const getContractDrafts = async ({ userId }: { userId: number }) => {
-  return await contractDocumentRepository.getContractDrafts({ userId });
-};
-
-export const uploadContractDocument = async (file: Express.Multer.File) => {
+export const uploadContractDocument = async (
+  file: Express.Multer.File,
+): Promise<UploadContractDocumentResponseDto> => {
   const uploadedDocument =
     await contractDocumentRepository.uploadContractDocument({
       fileUrl: file.path,
@@ -32,9 +41,11 @@ export const uploadContractDocument = async (file: Express.Multer.File) => {
     throw new Error('Failed to upload document');
   }
 
-  return uploadedDocument.id;
+  return { documentId: uploadedDocument.id };
 };
 
 export const getContractDocumentById = async (id: number) => {
+  // This service function is used for file download and might not need a DTO.
+  // Returning the full model is acceptable here.
   return await contractDocumentRepository.findContractDocumentById(id);
 };
