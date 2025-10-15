@@ -17,7 +17,7 @@ import {
 import carModelRepository from '@/repositories/car-model.repository.js';
 import { userService } from './user.service.js';
 import { companyRepository } from '@/repositories/company.repository.js';
-import { BadRequestError, NotFoundError } from '../utils/custom-error.js';
+import { BadRequestError, NotFoundError } from '../middlewares/custom-error.js';
 import { CarType, Prisma } from '@prisma/client';
 
 class CarService {
@@ -143,14 +143,11 @@ class CarService {
         return type;
     }
   }
-  private async buildCarData({ userId, data }: CarRequestDto) {
-    const { companyCode } = await this.getCompanyCode(userId);
-    const { manufacturer, model } = data;
-    const carModel = await this.getModelId(manufacturer, model);
-    if (!carModel) {
-      throw new BadRequestError('잘못된 요청입니다.');
-    }
-    const createData = {
+  /**
+   * 차량 데이터의 공통 부분을 추출하는 헬퍼 메서드
+   */
+  private extractBaseCarData(data: CarRequestDto['data']) {
+    return {
       carNumber: data.carNumber,
       manufacturingYear: data.manufacturingYear,
       mileage: data.mileage,
@@ -158,19 +155,30 @@ class CarService {
       accidentCount: data.accidentCount,
       explanation: data.explanation,
       accidentDetails: data.accidentDetails,
+    };
+  }
+
+  /**
+   * 단일 차량 생성을 위한 데이터 빌드 (Prisma connect 사용)
+   */
+  private async buildCarData({ userId, data }: CarRequestDto) {
+    const { companyCode } = await this.getCompanyCode(userId);
+    const { manufacturer, model } = data;
+    const carModel = await this.getModelId(manufacturer, model);
+    if (!carModel) {
+      throw new BadRequestError('잘못된 요청입니다.');
+    }
+    return {
+      ...this.extractBaseCarData(data),
       company: {
-        connect: {
-          companyCode,
-        },
+        connect: { companyCode },
       },
       model: {
-        connect: {
-          id: carModel.id,
-        },
+        connect: { id: carModel.id },
       },
     };
-    return createData;
   }
+
   private async buildCarUpdateData({ data }: UpdateCarData) {
     const { manufacturer, model, ...restData } = data;
     const updateData: Prisma.CarUpdateInput = { ...restData };
@@ -186,6 +194,10 @@ class CarService {
     }
     return updateData;
   }
+
+  /**
+   * 대량 차량 생성을 위한 데이터 빌드 (createMany용 - ID 직접 사용)
+   */
   private async buildManyCarData({ userId, data }: CarRequestDto) {
     const { companyCode } = await this.getCompanyCode(userId);
     const company = await this.getCompanyId(companyCode);
@@ -197,18 +209,11 @@ class CarService {
     if (!carModel) {
       throw new BadRequestError('잘못된 요청입니다.');
     }
-    const createManyData = {
-      carNumber: data.carNumber,
-      manufacturingYear: data.manufacturingYear,
-      mileage: data.mileage,
-      price: data.price,
-      accidentCount: data.accidentCount,
-      explanation: data.explanation,
-      accidentDetails: data.accidentDetails,
+    return {
+      ...this.extractBaseCarData(data),
       companyId: company.id,
       modelId: carModel.id,
     };
-    return createManyData;
   }
   private buildQueryOptions({
     page,

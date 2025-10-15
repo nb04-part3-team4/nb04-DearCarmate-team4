@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { ForbiddenError, UnauthorizedError } from '@/utils/custom-error';
-import prisma from '@/utils/prisma';
+import { ForbiddenError, UnauthorizedError } from '@/middlewares/custom-error';
+import prisma from '@/middlewares/prisma';
 
 export const adminGuard = async (
   req: Request,

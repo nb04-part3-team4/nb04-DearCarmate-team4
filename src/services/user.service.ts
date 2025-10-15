@@ -3,12 +3,12 @@ import {
   UpdateUserInput,
 } from '@/repositories/user.repository';
 import { companyRepository } from '@/repositories/company.repository';
-import { hashPassword, verifyPassword } from '@/utils/password';
+import { hashPassword, verifyPassword } from '@/middlewares/password';
 import {
   BadRequestError,
   NotFoundError,
   ConflictError,
-} from '@/utils/custom-error';
+} from '@/middlewares/custom-error';
 import type {
   SignupResponseDto,
   GetMeResponseDto,

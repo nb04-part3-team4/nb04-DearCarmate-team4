@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import { BadRequestError } from '@/utils/custom-error.js';
+import { BadRequestError } from '@/middlewares/custom-error.js';
 import { BaseCarDto, RawCarCsvData } from '@/types/cars.type.js';
 import { Readable } from 'stream';
 import csvParser from 'csv-parser';

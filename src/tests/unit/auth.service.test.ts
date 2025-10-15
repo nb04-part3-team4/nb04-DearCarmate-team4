@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { authService } from '@/services/auth.service';
 import { createTestCompany, createTestUser } from '../helpers/test-data';
-import { UnauthorizedError } from '@/utils/custom-error';
-import { verifyAccessToken, verifyRefreshToken } from '@/utils/jwt';
+import { UnauthorizedError } from '@/middlewares/custom-error';
+import { verifyAccessToken, verifyRefreshToken } from '@/middlewares/jwt';
 
 describe('AuthService', () => {
   let companyId: number;

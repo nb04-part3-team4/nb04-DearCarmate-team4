@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { CustomError } from '@/utils/custom-error';
+import { CustomError } from '@/middlewares/custom-error';
 import { Prisma } from '@prisma/client';
 import { ZodError } from 'zod';
 

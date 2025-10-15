@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 import { resolve } from 'path';
 import { beforeAll, afterAll, beforeEach } from 'vitest';
-import prisma from '@/utils/prisma';
+import prisma from '@/middlewares/prisma';
 
 // Load test environment variables
 config({ path: resolve(__dirname, '../../.env.test') });

@@ -1,7 +1,7 @@
 import express from 'express';
 import CarController from '@/controllers/cars.controller';
 import { authMiddleware } from '@/middlewares/auth';
-import { uploadCsv } from '@/utils/multer.js';
+import { uploadCsv } from '@/middlewares/multer.js';
 import { carsCsvParser } from '@/middlewares/cars-csv-parser.js';
 
 const carRouter = express.Router();

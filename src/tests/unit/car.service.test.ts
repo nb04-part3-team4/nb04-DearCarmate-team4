@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import carsService from '@/services/cars.service';
 import { createTestCompany, createTestUser } from '../helpers/test-data';
-import { BadRequestError, NotFoundError } from '@/utils/custom-error';
+import { BadRequestError, NotFoundError } from '@/middlewares/custom-error';
 import carModelRepository from '@/repositories/car-model.repository';
 import carRepository from '@/repositories/cars.repository';
 import { CarType, CarStatus } from '@prisma/client';

@@ -6,7 +6,7 @@ import {
   deletionSingleByPublicId,
   deletionList,
   deletionListByPublicIds,
-} from '@/utils/cloudinary';
+} from '@/middlewares/cloudinary';
 import { promises as fs } from 'fs';
 import path from 'path';
 

@@ -5,7 +5,7 @@
 
 import { v2 as cloudinary } from 'cloudinary';
 import { promises as fs } from 'fs';
-import { InternalServerError } from '@/utils/custom-error';
+import { InternalServerError } from '@/middlewares/custom-error';
 import { UploadResult } from '@/types/cloudinary.type';
 
 // Cloudinary 초기 설정

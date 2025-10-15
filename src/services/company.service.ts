@@ -1,6 +1,6 @@
 import { companyRepository } from '@/repositories/company.repository';
 import { userRepository } from '@/repositories/user.repository';
-import { ConflictError, NotFoundError } from '@/utils/custom-error';
+import { ConflictError, NotFoundError } from '@/middlewares/custom-error';
 import type {
   CreateCompanyResponseDto,
   GetCompaniesResponseDto,

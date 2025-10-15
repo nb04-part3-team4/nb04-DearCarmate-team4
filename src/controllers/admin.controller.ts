@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { adminService } from '@/services/admin.service';
-import { BadRequestError } from '@/utils/custom-error';
+import { BadRequestError } from '@/middlewares/custom-error';
 
 export class AdminController {
   async deleteUser(

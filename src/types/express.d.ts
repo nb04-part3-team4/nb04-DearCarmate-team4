@@ -1,4 +1,4 @@
-import { JwtPayload } from '@/utils/jwt';
+import { JwtPayload } from '@/middlewares/jwt';
 import { BaseCarDto } from './cars.type.js';
 
 declare global {

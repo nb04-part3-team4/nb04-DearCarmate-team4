@@ -1,18 +1,18 @@
 import { userRepository } from '@/repositories/user.repository';
 import { companyRepository } from '@/repositories/company.repository';
-import { verifyPassword } from '@/utils/password';
+import { verifyPassword } from '@/middlewares/password';
 import {
   generateAccessToken,
   generateRefreshToken,
   verifyRefreshToken,
   JwtPayload,
-} from '@/utils/jwt';
-import { UnauthorizedError, NotFoundError } from '@/utils/custom-error';
+} from '@/middlewares/jwt';
+import { UnauthorizedError, NotFoundError } from '@/middlewares/custom-error';
 import type {
-  LoginRequestDto,
   LoginResponseDto,
   RefreshTokenResponseDto,
 } from '@/dtos/auth.dto';
+import type { LoginRequestDto } from '@/types/auth.schema';
 
 export class AuthService {
   async login(data: LoginRequestDto): Promise<LoginResponseDto> {

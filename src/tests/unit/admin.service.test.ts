@@ -5,7 +5,7 @@ import {
   createTestUser,
   createTestAdmin,
 } from '../helpers/test-data';
-import { NotFoundError, ForbiddenError } from '@/utils/custom-error';
+import { NotFoundError, ForbiddenError } from '@/middlewares/custom-error';
 import { userRepository } from '@/repositories/user.repository';
 
 describe('AdminService', () => {

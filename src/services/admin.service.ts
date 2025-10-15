@@ -1,5 +1,5 @@
 import { userRepository } from '@/repositories/user.repository';
-import { NotFoundError, ForbiddenError } from '@/utils/custom-error';
+import { NotFoundError, ForbiddenError } from '@/middlewares/custom-error';
 
 export class AdminService {
   async deleteUser(userId: number): Promise<void> {

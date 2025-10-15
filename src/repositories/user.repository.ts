@@ -1,4 +1,4 @@
-import prisma from '@/utils/prisma';
+import prisma from '@/middlewares/prisma';
 import { User } from '@prisma/client';
 import type { CompanyUsersQueryParams } from '@/types/company.schema';
 

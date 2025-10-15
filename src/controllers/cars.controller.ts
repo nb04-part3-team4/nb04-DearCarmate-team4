@@ -1,14 +1,13 @@
 import { RequestHandler } from 'express';
 import CarService from '@/services/cars.service.js';
-import { BadRequestError, UnauthorizedError } from '@/utils/custom-error.js';
+import { BadRequestError } from '@/middlewares/custom-error.js';
+import { requireAuth } from '@/middlewares/auth-guard.js';
 import { carsBodySchema, carsQuerySchema } from '@/types/cars.schema.js';
 
 class CarController {
   getCar: RequestHandler = async (req, res, next) => {
     try {
-      if (!req.user) {
-        throw new UnauthorizedError('로그인이 필요합니다');
-      }
+      requireAuth(req);
       const carId = parseInt(req.params.carId, 10);
       if (isNaN(carId)) {
         throw new BadRequestError('잘못된 요청입니다');
@@ -21,9 +20,7 @@ class CarController {
   };
   getCars: RequestHandler = async (req, res, next) => {
     try {
-      if (!req.user) {
-        throw new UnauthorizedError('로그인이 필요합니다');
-      }
+      requireAuth(req);
       const validatedQuery = carsQuerySchema.parse(req.query);
       const result = await CarService.getCars(validatedQuery);
       res.status(200).json(result);
@@ -33,9 +30,7 @@ class CarController {
   };
   createCar: RequestHandler = async (req, res, next) => {
     try {
-      if (!req.user) {
-        throw new UnauthorizedError('로그인이 필요합니다');
-      }
+      requireAuth(req);
       const { userId } = req.user;
       const validatedBody = carsBodySchema.parse(req.body);
       const result = await CarService.createCar({
@@ -49,9 +44,7 @@ class CarController {
   };
   updateCar: RequestHandler = async (req, res, next) => {
     try {
-      if (!req.user) {
-        throw new UnauthorizedError('로그인이 필요합니다');
-      }
+      requireAuth(req);
       const carId = parseInt(req.params.carId, 10);
       if (isNaN(carId)) {
         throw new BadRequestError('잘못된 요청입니다');
@@ -68,9 +61,7 @@ class CarController {
   };
   deleteCar: RequestHandler = async (req, res, next) => {
     try {
-      if (!req.user) {
-        throw new UnauthorizedError('로그인이 필요합니다');
-      }
+      requireAuth(req);
       const carId = parseInt(req.params.carId, 10);
       if (isNaN(carId)) {
         throw new BadRequestError('잘못된 요청입니다');
@@ -83,9 +74,7 @@ class CarController {
   };
   getCarModels: RequestHandler = async (req, res, next) => {
     try {
-      if (!req.user) {
-        throw new UnauthorizedError('로그인이 필요합니다');
-      }
+      requireAuth(req);
       const result = await CarService.getCarModels();
       res.status(200).json(result);
     } catch (e) {
@@ -94,12 +83,10 @@ class CarController {
   };
   uploadCars: RequestHandler = async (req, res, next) => {
     try {
+      requireAuth(req);
       const carDatas = req.parsedCsvData;
       if (!carDatas) {
         throw new BadRequestError('잘못된 요청입니다');
-      }
-      if (!req.user) {
-        throw new UnauthorizedError('로그인이 필요합니다');
       }
       const { userId } = req.user;
       await CarService.uploadCars({ userId, data: carDatas });

@@ -5,7 +5,7 @@ import {
   BadRequestError,
   NotFoundError,
   ConflictError,
-} from '@/utils/custom-error';
+} from '@/middlewares/custom-error';
 
 describe('UserService', () => {
   let companyId: number;

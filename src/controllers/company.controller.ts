@@ -6,7 +6,7 @@ import {
   updateCompanySchema,
   companyUsersQuerySchema,
 } from '@/types/company.schema';
-import { BadRequestError } from '@/utils/custom-error';
+import { BadRequestError } from '@/middlewares/custom-error';
 
 export class CompanyController {
   async createCompany(

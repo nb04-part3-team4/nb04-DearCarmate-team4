@@ -1,4 +1,4 @@
-import prisma from '@/utils/prisma.js';
+import prisma from '@/middlewares/prisma.js';
 import { CarModel } from '@prisma/client';
 
 class CarModelRepository {

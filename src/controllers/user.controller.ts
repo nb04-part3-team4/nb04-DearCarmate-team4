@@ -2,7 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import { userService } from '@/services/user.service';
 import { signupSchema, updateMeSchema } from '@/types/user.schema';
 import { SuccessResponse } from '@/types/response';
-import { UnauthorizedError, BadRequestError } from '@/utils/custom-error';
+import { BadRequestError } from '@/middlewares/custom-error';
+import { requireAuth } from '@/middlewares/auth-guard';
 import type {
   SignupResponseDto,
   GetMeResponseDto,
@@ -33,10 +34,7 @@ export class UserController {
 
   async getMe(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      // 1. 인증된 유저 확인
-      if (!req.user) {
-        throw new UnauthorizedError('로그인이 필요합니다');
-      }
+      requireAuth(req);
 
       const result = await userService.getMe(req.user.userId);
 
@@ -58,10 +56,7 @@ export class UserController {
     next: NextFunction,
   ): Promise<void> {
     try {
-      // 1. 인증된 유저 확인
-      if (!req.user) {
-        throw new UnauthorizedError('로그인이 필요합니다');
-      }
+      requireAuth(req);
 
       const validatedData = updateMeSchema.parse(req.body);
       const result = await userService.updateMe(req.user.userId, validatedData);
@@ -84,9 +79,7 @@ export class UserController {
     next: NextFunction,
   ): Promise<void> {
     try {
-      if (!req.user) {
-        throw new UnauthorizedError('로그인이 필요합니다');
-      }
+      requireAuth(req);
 
       await userService.deleteMe(req.user.userId);
 
