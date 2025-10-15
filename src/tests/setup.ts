@@ -20,5 +20,4 @@ beforeEach(async () => {
   // Clean up database before each test
   // Company has CASCADE DELETE, so deleting companies will delete users and related data
   await prisma.company.deleteMany();
-  await prisma.carModel.deleteMany();
 });
