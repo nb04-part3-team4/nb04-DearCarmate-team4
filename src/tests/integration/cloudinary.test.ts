@@ -15,7 +15,7 @@ describe('Cloudinary Integration Tests', () => {
 
   beforeAll(async () => {
     // Create a test image file (1x1 red pixel PNG)
-    const testDir = path.join(process.cwd(), 'temp-test-uploads');
+    const testDir = path.join(process.cwd(), 'storage/temp');
     await fs.mkdir(testDir, { recursive: true });
 
     testImagePath = path.join(testDir, 'test-image.png');
@@ -31,7 +31,7 @@ describe('Cloudinary Integration Tests', () => {
 
   afterAll(async () => {
     // Clean up test directory
-    const testDir = path.join(process.cwd(), 'temp-test-uploads');
+    const testDir = path.join(process.cwd(), 'storage/temp');
     try {
       await fs.rm(testDir, { recursive: true, force: true });
     } catch (error) {
