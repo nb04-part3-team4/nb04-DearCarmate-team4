@@ -11,6 +11,7 @@ import userRoutes from '@/features/users/user.routes.js';
 import adminRoutes from '@/features/admin/admin.routes.js';
 import companyRoutes from '@/features/companies/company.routes.js';
 import swaggerUi from 'swagger-ui-express';
+// import contractDocumentRoutes from '@/features/contractDocuments/contractDocument.routes.js';
 import { specs } from '@/documentation/swagger.config.js';
 
 const app: Application = express();
@@ -30,6 +31,7 @@ app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/admin', adminRoutes);
 app.use('/companies', companyRoutes);
+// app.use('/contractDocuments', contractDocumentRoutes);
 
 app.get('/health', (_req, res) => {
   res.status(200).json({
