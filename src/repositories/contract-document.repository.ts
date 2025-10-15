@@ -48,7 +48,7 @@ const uploadContractDocument = async ({
   fileName: string;
   fileSize: number;
 }) => {
-  const uploadedDocment = await prisma.contractDocument.create({
+  const uploadedDocument = await prisma.contractDocument.create({
     data: {
       fileName,
       fileUrl,
@@ -56,7 +56,7 @@ const uploadContractDocument = async ({
     },
   });
 
-  return uploadedDocment;
+  return uploadedDocument;
 };
 
 const findContractDocumentById = async (id: number) => {
