@@ -1,5 +1,5 @@
 import express from 'express';
-import { upload } from '../middlewares/multer';
+import { uploadImage } from '../utils/multer';
 import * as contractDocumentController from '../controllers/contract-document.controller';
 import { authMiddleware } from '@/middlewares/auth';
 
@@ -23,7 +23,7 @@ router.get(
 router.post(
   '/upload',
   authMiddleware,
-  upload.single('contractDocument'),
+  uploadImage.single('contractDocument'),
   contractDocumentController.uploadContractDocument,
 );
 
