@@ -55,8 +55,8 @@ describe('Cloudinary Integration Tests', () => {
       expect(result.format).toBe('png');
 
       // Save for later tests
-      uploadedImageUrl = result.imageUrl;
-      uploadedPublicId = result.publicId;
+      // uploadedImageUrl = result.imageUrl;
+      // uploadedPublicId = result.publicId;
 
       // Verify the file was deleted after upload
       await expect(fs.access(uploadPath)).rejects.toThrow();

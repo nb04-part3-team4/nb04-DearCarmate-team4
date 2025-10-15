@@ -2,7 +2,6 @@ import { RequestHandler } from 'express';
 import { BadRequestError } from '@/utils/custom-error.js';
 import { BaseCarDto, RawCarCsvData } from '@/types/cars.type.js';
 import { Readable } from 'stream';
-// @ts-expect-error - csv-parser doesn't have type definitions
 import csvParser from 'csv-parser';
 
 export const carsCsvParser: RequestHandler = async (req, res, next) => {
