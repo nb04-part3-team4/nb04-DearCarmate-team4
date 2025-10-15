@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { seedCarModels } from './car-models.seed';
 import { seedCompanies } from './companies.seed';
+import { seedAdmin } from './admin.seed';
 
 const prisma = new PrismaClient();
 
@@ -10,6 +11,7 @@ async function main() {
   try {
     await seedCarModels();
     await seedCompanies();
+    await seedAdmin();
 
     console.log('\n✅ All seeding completed successfully!');
   } catch (error) {
