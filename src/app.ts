@@ -11,7 +11,7 @@ import userRoutes from '@/features/users/user.routes.js';
 import adminRoutes from '@/features/admin/admin.routes.js';
 import companyRoutes from '@/features/companies/company.routes.js';
 import swaggerUi from 'swagger-ui-express';
-import { specs } from '@/swagger.config.js';
+import { specs } from '@/documentation/swagger.config.js';
 
 const app: Application = express();
 
