@@ -6,7 +6,7 @@ import {
   deletionSingleByPublicId,
   deletionList,
   deletionListByPublicIds,
-} from '@/utils/cloudinary';
+} from '@/shared/middlewares/cloudinary';
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -15,7 +15,7 @@ describe('Cloudinary Integration Tests', () => {
 
   beforeAll(async () => {
     // Create a test image file (1x1 red pixel PNG)
-    const testDir = path.join(process.cwd(), 'temp-test-uploads');
+    const testDir = path.join(process.cwd(), 'storage/temp');
     await fs.mkdir(testDir, { recursive: true });
 
     testImagePath = path.join(testDir, 'test-image.png');
@@ -31,7 +31,7 @@ describe('Cloudinary Integration Tests', () => {
 
   afterAll(async () => {
     // Clean up test directory
-    const testDir = path.join(process.cwd(), 'temp-test-uploads');
+    const testDir = path.join(process.cwd(), 'storage/temp');
     try {
       await fs.rm(testDir, { recursive: true, force: true });
     } catch (error) {
@@ -55,8 +55,8 @@ describe('Cloudinary Integration Tests', () => {
       expect(result.format).toBe('png');
 
       // Save for later tests
-      uploadedImageUrl = result.imageUrl;
-      uploadedPublicId = result.publicId;
+      // uploadedImageUrl = result.imageUrl;
+      // uploadedPublicId = result.publicId;
 
       // Verify the file was deleted after upload
       await expect(fs.access(uploadPath)).rejects.toThrow();

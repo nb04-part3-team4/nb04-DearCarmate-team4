@@ -1,7 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { companyService } from '@/services/company.service';
+import { companyService } from '@/features/companies/company.service';
 import { createTestCompany, createTestUser } from '../helpers/test-data';
-import { ConflictError, NotFoundError } from '@/utils/custom-error';
+import {
+  ConflictError,
+  NotFoundError,
+} from '@/shared/middlewares/custom-error';
 
 describe('CompanyService', () => {
   let companyId: number;

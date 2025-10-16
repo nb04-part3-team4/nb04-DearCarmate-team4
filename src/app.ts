@@ -1,21 +1,24 @@
 import express, { Application } from 'express';
 import cors from 'cors';
-import { errorHandler, notFoundHandler } from '@/middlewares/error-handler.js';
-import imageRouter from '@/routes/images.routes.js';
-import carRouter from '@/routes/cars.routes.js';
-import authRoutes from '@/routes/auth.routes';
-import userRoutes from '@/routes/user.routes';
-import adminRoutes from '@/routes/admin.routes';
-import companyRoutes from '@/routes/company.routes';
-import contractDocumentRoutes from '@/routes/contract-document.route';
+import {
+  errorHandler,
+  notFoundHandler,
+} from '@/shared/middlewares/error-handler.js';
+import imageRouter from '@/features/images/images.routes.js';
+import carRouter from '@/features/cars/cars.routes.js';
+import authRoutes from '@/features/auth/auth.routes.js';
+import userRoutes from '@/features/users/user.routes.js';
+import adminRoutes from '@/features/admin/admin.routes.js';
+import companyRoutes from '@/features/companies/company.routes.js';
 import swaggerUi from 'swagger-ui-express';
-import { specs } from '@/swagger.config.js';
+// import contractDocumentRoutes from '@/features/contractDocuments/contractDocument.routes.js';
+import { specs } from '@/documentation/swagger.config.js';
 
 const app: Application = express();
 
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static('storage/uploads'));
 app.use(express.urlencoded({ extended: true }));
 
 // Swagger UI
@@ -28,7 +31,7 @@ app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/admin', adminRoutes);
 app.use('/companies', companyRoutes);
-app.use('/contractDocuments', contractDocumentRoutes);
+// app.use('/contractDocuments', contractDocumentRoutes);
 
 app.get('/health', (_req, res) => {
   res.status(200).json({

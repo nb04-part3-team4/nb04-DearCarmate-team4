@@ -4,7 +4,7 @@ import {
   contractDocumentParamsSchema,
   getContractDocumentsQuerySchema,
   type GetContractDocumentsRequestDto,
-} from '../dtos/contract-document.dto';
+} from '../features/contract-document/contract-document.dto';
 
 const getContractDocuments: RequestHandler = async (req, res, next) => {
   const validationResult = getContractDocumentsQuerySchema.safeParse(req.query);

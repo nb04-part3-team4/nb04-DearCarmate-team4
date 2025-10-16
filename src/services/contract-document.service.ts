@@ -4,7 +4,7 @@ import {
   type GetContractDocumentsResponseDto,
   type GetContractDraftsResponseDto,
   type UploadContractDocumentResponseDto,
-} from '../dtos/contract-document.dto';
+} from '../features/contract-document/contract-document.dto';
 
 export const getContractDocuments = async (
   requestDto: GetContractDocumentsRequestDto,

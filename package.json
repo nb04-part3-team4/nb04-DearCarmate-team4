@@ -18,7 +18,7 @@
     "typecheck": "tsc --noEmit",
     "prepare": "husky || true",
     "db:setup": "npx prisma migrate deploy && npx prisma db seed",
-    "test:cloudinary": "tsx scripts/test-cloudinary.ts"
+    "test:cloudinary": "tsx scripts/dev/test-cloudinary.ts"
   },
   "lint-staged": {
     "*.ts": [
@@ -74,6 +74,6 @@
     "vitest": "^3.2.4"
   },
   "prisma": {
-    "seed": "tsx seed/index.ts"
+    "seed": "tsx scripts/seed/index.ts"
   }
 }

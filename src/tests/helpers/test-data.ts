@@ -1,6 +1,6 @@
-import prisma from '@/utils/prisma';
-import { hashPassword } from '@/utils/password';
-import type { Company, User } from '@prisma/client';
+import prisma from '@/shared/middlewares/prisma';
+import { hashPassword } from '@/shared/middlewares/password';
+import type { Company, User, Car } from '@prisma/client';
 
 export async function createTestCompany(
   data: Partial<{ name: string; companyCode: string }> = {},
@@ -45,5 +45,48 @@ export async function createTestAdmin(companyId: number): Promise<User> {
     employeeNumber: 'ADMIN001',
     name: 'Test Admin',
     isAdmin: true,
+  });
+}
+
+export async function createTestCar(
+  companyId: number,
+  data: Partial<{
+    carNumber: string;
+    manufacturer: string;
+    model: string;
+    manufacturingYear: number;
+    mileage: number;
+    price: number;
+    accidentCount: number;
+    explanation: string;
+    accidentDetails: string;
+  }> = {},
+): Promise<Car> {
+  // Find the car model from seed data
+  const carModel = await prisma.carModel.findFirst({
+    where: {
+      manufacturer: data.manufacturer || '기아',
+      model: data.model || 'K5',
+    },
+  });
+
+  if (!carModel) {
+    throw new Error(
+      `Car model not found: ${data.manufacturer || '기아'} ${data.model || 'K5'}`,
+    );
+  }
+
+  return await prisma.car.create({
+    data: {
+      carNumber: data.carNumber || '12가1234',
+      manufacturingYear: data.manufacturingYear || 2020,
+      mileage: data.mileage || 0,
+      price: data.price || 1000000,
+      accidentCount: data.accidentCount || 0,
+      explanation: data.explanation,
+      accidentDetails: data.accidentDetails,
+      companyId,
+      modelId: carModel.id,
+    },
   });
 }

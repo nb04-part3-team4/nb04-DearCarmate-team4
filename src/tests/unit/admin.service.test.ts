@@ -1,12 +1,15 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { adminService } from '@/services/admin.service';
+import { adminService } from '@/features/admin/admin.service';
 import {
   createTestCompany,
   createTestUser,
   createTestAdmin,
 } from '../helpers/test-data';
-import { NotFoundError, ForbiddenError } from '@/utils/custom-error';
-import { userRepository } from '@/repositories/user.repository';
+import {
+  NotFoundError,
+  ForbiddenError,
+} from '@/shared/middlewares/custom-error';
+import { userRepository } from '@/features/users/user.repository';
 
 describe('AdminService', () => {
   let companyId: number;

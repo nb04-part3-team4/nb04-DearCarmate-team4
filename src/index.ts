@@ -1,6 +1,9 @@
 import dotenv from 'dotenv';
 import app from './app';
-import { connectDatabase, disconnectDatabase } from '@/utils/prisma';
+import {
+  connectDatabase,
+  disconnectDatabase,
+} from '@/shared/middlewares/prisma';
 
 dotenv.config();
 
