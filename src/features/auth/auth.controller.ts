@@ -4,6 +4,7 @@ import {
   loginSchema,
   refreshTokenSchema,
   googleLoginSchema,
+  googleSignupSchema,
 } from '@/features/auth/auth.schema';
 
 export class AuthController {
@@ -28,6 +29,21 @@ export class AuthController {
       const result = await authService.googleLogin(validatedData);
 
       res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async googleSignup(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const validatedData = googleSignupSchema.parse(req.body);
+      const result = await authService.googleSignup(validatedData);
+
+      res.status(201).json(result);
     } catch (error) {
       next(error);
     }

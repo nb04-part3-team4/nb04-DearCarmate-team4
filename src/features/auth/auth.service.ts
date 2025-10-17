@@ -1,6 +1,6 @@
 import { userRepository } from '@/features/users/user.repository';
 import { companyRepository } from '@/features/companies/company.repository';
-import { verifyPassword } from '@/shared/middlewares/password';
+import { verifyPassword, hashPassword } from '@/shared/middlewares/password';
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -10,6 +10,8 @@ import {
 import {
   UnauthorizedError,
   NotFoundError,
+  ConflictError,
+  BadRequestError,
 } from '@/shared/middlewares/custom-error';
 import type {
   LoginResponseDto,
@@ -18,6 +20,7 @@ import type {
 import type {
   LoginRequestDto,
   GoogleLoginRequestDto,
+  GoogleSignupRequestDto,
 } from '@/features/auth/auth.schema';
 import { OAuth2Client } from 'google-auth-library';
 
@@ -142,6 +145,89 @@ export class AuthService {
         throw error;
       }
       throw new UnauthorizedError('Google 로그인에 실패했습니다');
+    }
+  }
+
+  async googleSignup(data: GoogleSignupRequestDto): Promise<LoginResponseDto> {
+    try {
+      // 1. Google 토큰 검증
+      const ticket = await this.googleClient.verifyIdToken({
+        idToken: data.token,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+
+      const payload = ticket.getPayload();
+      if (!payload || !payload.email) {
+        throw new UnauthorizedError('유효하지 않은 Google 토큰입니다');
+      }
+
+      const googleEmail = payload.email;
+
+      // 2. 이메일 중복 체크
+      const existingUser = await userRepository.findByEmail(googleEmail);
+      if (existingUser) {
+        throw new ConflictError('이미 존재하는 이메일입니다');
+      }
+
+      // 3. 회사 코드 확인
+      const company = await companyRepository.findByCompanyCode(
+        data.companyCode.trim(),
+      );
+      if (!company) {
+        throw new BadRequestError('잘못된 기업 인증코드입니다');
+      }
+
+      // 4. Google 사용자용 랜덤 비밀번호 생성 (사용자는 Google OAuth로만 로그인)
+      const randomPassword = `GOOGLE_${Date.now()}_${Math.random().toString(36)}`;
+      const hashedPassword = await hashPassword(randomPassword);
+
+      // 5. 유저 생성 (프론트엔드에서 입력한 이름 사용)
+      const user = await userRepository.create({
+        email: googleEmail,
+        password: hashedPassword,
+        name: data.name,
+        employeeNumber: data.employeeNumber,
+        phoneNumber: data.phoneNumber,
+        imageUrl: payload.picture || undefined,
+        companyId: company.id,
+      });
+
+      // 6. JWT 페이로드 생성
+      const jwtPayload: JwtPayload = {
+        userId: user.id,
+        email: user.email,
+      };
+
+      // 7. 토큰 생성
+      const accessToken = generateAccessToken(jwtPayload);
+      const refreshToken = generateRefreshToken(jwtPayload);
+
+      // 8. 응답 데이터 반환
+      return {
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          employeeNumber: user.employeeNumber,
+          phoneNumber: user.phoneNumber || undefined,
+          imageUrl: user.imageUrl || undefined,
+          isAdmin: user.isAdmin,
+          company: {
+            companyCode: company.companyCode,
+          },
+        },
+        accessToken,
+        refreshToken,
+      };
+    } catch (error) {
+      if (
+        error instanceof UnauthorizedError ||
+        error instanceof ConflictError ||
+        error instanceof BadRequestError
+      ) {
+        throw error;
+      }
+      throw new UnauthorizedError('Google 회원가입에 실패했습니다');
     }
   }
 
