@@ -1,7 +1,7 @@
 import express from 'express';
-import { uploadImage } from '../utils/multer';
-import * as contractDocumentController from '../controllers/contract-document.controller';
-import { authMiddleware } from '@/middlewares/auth';
+import { uploadImage } from '../../shared/middlewares/multer';
+import * as contractDocumentController from './contract-document.controller';
+import { authMiddleware } from '../../shared/middlewares/auth';
 
 const router = express.Router();
 
