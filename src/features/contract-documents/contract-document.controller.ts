@@ -1,10 +1,10 @@
 import type { RequestHandler } from 'express';
-import * as contractDocumentService from '../services/contract-document.service';
+import * as contractDocumentService from './contract-document.service';
 import {
   contractDocumentParamsSchema,
   getContractDocumentsQuerySchema,
   type GetContractDocumentsRequestDto,
-} from '../features/contract-document/contract-document.dto';
+} from './contract-document.dto';
 
 const getContractDocuments: RequestHandler = async (req, res, next) => {
   const validationResult = getContractDocumentsQuerySchema.safeParse(req.query);

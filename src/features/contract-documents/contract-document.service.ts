@@ -1,10 +1,10 @@
-import * as contractDocumentRepository from '../repositories/contract-document.repository';
+import * as contractDocumentRepository from './contract-document.repository';
 import {
   type GetContractDocumentsRequestDto,
   type GetContractDocumentsResponseDto,
   type GetContractDraftsResponseDto,
   type UploadContractDocumentResponseDto,
-} from '../features/contract-document/contract-document.dto';
+} from './contract-document.dto';
 
 export const getContractDocuments = async (
   requestDto: GetContractDocumentsRequestDto,
