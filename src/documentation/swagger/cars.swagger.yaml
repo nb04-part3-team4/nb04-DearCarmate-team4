@@ -168,6 +168,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CarResponseSchema'
+        '400':
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_BadRequest'
         '401':
           description: 권한 없음
           content:
@@ -179,7 +185,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse_NotFound'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 존재하지 않는 차량입니다
     patch:
       tags:
         - Cars
@@ -223,7 +233,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse_NotFound'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 존재하지 않는 차량입니다
     delete:
       tags:
         - Cars
@@ -248,6 +262,12 @@ paths:
                   message:
                     type: string
                     example: 차량 삭제 성공
+        '400':
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse_BadRequest'
         '401':
           description: 권한 없음
           content:
@@ -259,7 +279,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse_NotFound'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 존재하지 않는 차량입니다
 
 components:
   schemas:
