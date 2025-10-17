@@ -28,7 +28,7 @@ export const updateMeSchema = z
       .min(8, 'Password must be at least 8 characters')
       .optional(),
     passwordConfirmation: z.string().optional(),
-    imageUrl: z.string().url().optional(),
+    imageUrl: z.string().url().nullable().optional(),
   })
   .refine(
     (data) => {

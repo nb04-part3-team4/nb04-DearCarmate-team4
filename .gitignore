@@ -48,3 +48,5 @@ temp/
 # Docker
 .dockerignore
 docker-compose.override.yml
+
+package-lock.json
