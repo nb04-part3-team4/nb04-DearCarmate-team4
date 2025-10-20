@@ -1,25 +1,30 @@
 import { z } from 'zod';
 
 export const loginSchema = z.object({
-  email: z.string().email('Invalid email format'),
-  password: z.string().min(1, 'Password is required'),
+  email: z
+    .string({ message: '이메일을 입력해주세요' })
+    .min(1, '이메일을 입력해주세요')
+    .email({ message: '올바른 이메일 형식이 아닙니다' }),
+  password: z
+    .string({ message: '비밀번호를 입력해주세요' })
+    .min(1, '비밀번호를 입력해주세요'),
 });
 
 export const refreshTokenSchema = z.object({
-  refreshToken: z.string().min(1, 'Refresh token is required'),
+  refreshToken: z.string().min(1, '리프레시 토큰이 필요합니다'),
 });
 
 export const googleLoginSchema = z.object({
-  token: z.string().min(1, 'Google token is required'),
+  token: z.string().min(1, 'Google 토큰이 필요합니다'),
   companyCode: z.string().optional(),
 });
 
 export const googleSignupSchema = z.object({
-  token: z.string().min(1, 'Google token is required'),
-  name: z.string().min(1, 'Name is required'),
-  employeeNumber: z.string().min(1, 'Employee number is required'),
-  phoneNumber: z.string().min(1, 'Phone number is required'),
-  companyCode: z.string().min(1, 'Company code is required'),
+  token: z.string().min(1, 'Google 토큰이 필요합니다'),
+  name: z.string().min(1, '이름을 입력해주세요'),
+  employeeNumber: z.string().min(1, '사원번호를 입력해주세요'),
+  phoneNumber: z.string().min(1, '전화번호를 입력해주세요'),
+  companyCode: z.string().min(1, '기업 인증코드를 입력해주세요'),
 });
 
 export type LoginRequestDto = z.infer<typeof loginSchema>;

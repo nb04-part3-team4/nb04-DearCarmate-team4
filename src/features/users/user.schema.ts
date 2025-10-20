@@ -2,16 +2,14 @@ import { z } from 'zod';
 
 export const signupSchema = z
   .object({
-    name: z.string().min(1, 'Name is required'),
-    email: z.string().email('Invalid email format'),
-    employeeNumber: z.string().min(1, 'Employee number is required'),
+    name: z.string().min(1, '이름을 입력해주세요'),
+    email: z.string().email('올바른 이메일 형식이 아닙니다'),
+    employeeNumber: z.string().min(1, '사원번호를 입력해주세요'),
     phoneNumber: z.string().optional(),
-    password: z.string().min(8, 'Password must be at least 8 characters'),
-    passwordConfirmation: z
-      .string()
-      .min(1, 'Password confirmation is required'),
-    companyName: z.string().min(1, 'Company is required'),
-    companyCode: z.string().min(1, 'Company code is required'),
+    password: z.string().min(8, '비밀번호는 최소 8자 이상이어야 합니다'),
+    passwordConfirmation: z.string().min(1, '비밀번호 확인을 입력해주세요'),
+    companyName: z.string().min(1, '회사명을 입력해주세요'),
+    companyCode: z.string().min(1, '기업 인증코드를 입력해주세요'),
   })
   .refine((data) => data.password === data.passwordConfirmation, {
     message: '비밀번호와 비밀번호 확인이 일치하지 않습니다',
@@ -25,10 +23,14 @@ export const updateMeSchema = z
     currentPassword: z.string().optional(),
     password: z
       .string()
-      .min(8, 'Password must be at least 8 characters')
+      .min(8, '비밀번호는 최소 8자 이상이어야 합니다')
       .optional(),
     passwordConfirmation: z.string().optional(),
-    imageUrl: z.string().url().nullable().optional(),
+    imageUrl: z
+      .string()
+      .url({ message: '올바른 URL 형식이 아닙니다' })
+      .nullable()
+      .optional(),
   })
   .refine(
     (data) => {

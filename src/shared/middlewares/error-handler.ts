@@ -40,9 +40,15 @@ export const errorHandler = (
   }
 
   if (err instanceof ZodError) {
+    // 첫 번째 에러 메시지를 주 메시지로 사용
+    const firstError = err.issues[0];
+    const mainMessage = firstError
+      ? `${firstError.path.join('.') ? firstError.path.join('.') + ': ' : ''}${firstError.message}`
+      : '입력값이 올바르지 않습니다';
+
     const errorResponse: ErrorResponse = {
       status: 'error',
-      message: 'Validation failed',
+      message: mainMessage,
       errors: err.issues.map((issue) => ({
         path: issue.path.join('.'),
         message: issue.message,
@@ -56,11 +62,20 @@ export const errorHandler = (
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
     if (err.code === 'P2002') {
       const target = (err.meta?.target as string[]) || [];
-      const field = target[0] || 'field';
+      const field = target[0] || '필드';
+
+      // 필드명 한글화
+      const fieldNameMap: Record<string, string> = {
+        email: '이메일',
+        employeeNumber: '사원번호',
+        phoneNumber: '전화번호',
+        companyCode: '기업코드',
+      };
+      const koreanField = fieldNameMap[field] || field;
 
       res.status(409).json({
         status: 'error',
-        message: `${field} already exists`,
+        message: `이미 사용 중인 ${koreanField}입니다`,
       });
       return;
     }
@@ -68,7 +83,7 @@ export const errorHandler = (
     if (err.code === 'P2003') {
       res.status(400).json({
         status: 'error',
-        message: 'Related resource not found',
+        message: '연관된 리소스를 찾을 수 없습니다',
       });
       return;
     }
@@ -76,7 +91,7 @@ export const errorHandler = (
     if (err.code === 'P2025') {
       res.status(404).json({
         status: 'error',
-        message: 'Resource not found',
+        message: '요청한 리소스를 찾을 수 없습니다',
       });
       return;
     }
@@ -87,7 +102,7 @@ export const errorHandler = (
     message:
       process.env.NODE_ENV === 'development'
         ? err.message
-        : 'Internal server error',
+        : '서버 오류가 발생했습니다',
   };
 
   if (process.env.NODE_ENV === 'development') {
@@ -100,7 +115,7 @@ export const errorHandler = (
 export const notFoundHandler = (req: Request, res: Response): void => {
   res.status(404).json({
     status: 'error',
-    message: 'Route not found',
+    message: '요청한 경로를 찾을 수 없습니다',
     path: req.path,
   });
 };
