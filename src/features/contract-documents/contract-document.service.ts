@@ -38,7 +38,7 @@ export const uploadContractDocument = async (
     });
 
   if (!uploadedDocument) {
-    throw new Error('Failed to upload document');
+    throw new Error('문서를 업로드할 수 없습니다');
   }
 
   return { documentId: uploadedDocument.id };
