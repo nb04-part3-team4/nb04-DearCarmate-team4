@@ -43,7 +43,7 @@ export const contractDocumentResponseSchema = z.object({
 
 export const contractDraftResponseSchema = z.object({
   id: z.number(),
-  contractName: z.string(),
+  data: z.string(),
 });
 
 export const uploadContractDocumentResponseSchema = z.object({

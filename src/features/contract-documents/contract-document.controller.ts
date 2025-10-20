@@ -63,10 +63,9 @@ const uploadContractDocument: RequestHandler = async (req, res, next) => {
       return next(new Error('파일을 찾을 수 없습니다'));
     }
 
-    const documentId =
-      await contractDocumentService.uploadContractDocument(file);
+    const data = await contractDocumentService.uploadContractDocument(file);
 
-    res.status(201).json(documentId);
+    res.status(201).json({ contractDocumentId: data.documentId });
   } catch (error) {
     next(error);
   }
@@ -89,7 +88,10 @@ const downloadContractDocument: RequestHandler = async (req, res, next) => {
       return next(new Error('파일을 찾을 수 없습니다'));
     }
 
-    return res.download(document.fileUrl, document.fileName);
+    return res
+      .status(200)
+      .json({ message: '계약서 다운로드 성공' })
+      .download(document.fileUrl, document.fileName);
   } catch (error) {
     next(error);
   }

@@ -42,7 +42,7 @@ export const getContractDrafts = async ({
   const drafts = await contractDocumentRepository.getContractDrafts({ userId });
   return drafts.map((draft) => ({
     id: draft.id,
-    contractName: draft.contractName,
+    data: draft.contractName,
   }));
 };
 
