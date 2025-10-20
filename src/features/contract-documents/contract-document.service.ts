@@ -1,16 +1,35 @@
 import * as contractDocumentRepository from './contract-document.repository';
 import {
   type GetContractDocumentsRequestDto,
-  type GetContractDocumentsResponseDto,
   type GetContractDraftsResponseDto,
   type UploadContractDocumentResponseDto,
+  type ContractDocumentResponseDto,
 } from './contract-document.dto';
 
 export const getContractDocuments = async (
   requestDto: GetContractDocumentsRequestDto,
-): Promise<GetContractDocumentsResponseDto> => {
-  const contracts =
-    await contractDocumentRepository.getContractDocuments(requestDto);
+): Promise<ContractDocumentResponseDto> => {
+  const currentPage = 0;
+  const totalPages = 0;
+  const totalItemCount = 0;
+  const data = (
+    await contractDocumentRepository.getContractDocuments(requestDto)
+  ).map((contract) => ({
+    id: contract.id,
+    contractName: contract.contractName,
+    resolutionDate: contract.resolutionDate,
+    manager: contract.user.name,
+    carNumber: contract.car.carNumber,
+    documentCount: contract.documents.length,
+    documents: contract.documents,
+  }));
+
+  const contracts: ContractDocumentResponseDto = {
+    currentPage,
+    totalPages,
+    totalItemCount,
+    data,
+  };
 
   return contracts;
 };

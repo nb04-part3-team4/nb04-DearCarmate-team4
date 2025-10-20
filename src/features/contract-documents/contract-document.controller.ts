@@ -26,7 +26,7 @@ const getContractDocuments: RequestHandler = async (req, res, next) => {
     const documents =
       await contractDocumentService.getContractDocuments(requestDto);
 
-    if (!documents || documents.length === 0) {
+    if (!documents) {
       return next(new Error('문서를 찾을 수 없습니다'));
     }
 
