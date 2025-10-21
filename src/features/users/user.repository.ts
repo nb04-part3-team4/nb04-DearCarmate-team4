@@ -39,9 +39,17 @@ export class UserRepository {
     });
   }
 
-  async findByEmployeeNumber(employeeNumber: string): Promise<User | null> {
+  async findByEmployeeNumber(
+    companyId: number,
+    employeeNumber: string,
+  ): Promise<User | null> {
     return await prisma.user.findUnique({
-      where: { employeeNumber },
+      where: {
+        companyId_employeeNumber: {
+          companyId,
+          employeeNumber,
+        },
+      },
     });
   }
 
