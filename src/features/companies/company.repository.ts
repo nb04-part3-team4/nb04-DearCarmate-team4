@@ -21,6 +21,12 @@ export class CompanyRepository {
     });
   }
 
+  async findByName(name: string): Promise<Company | null> {
+    return await prisma.company.findFirst({
+      where: { name },
+    });
+  }
+
   async findAll(
     params: CompanyQueryParams,
   ): Promise<{ data: Company[]; total: number }> {

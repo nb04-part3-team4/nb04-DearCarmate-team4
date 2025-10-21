@@ -7,7 +7,7 @@ export interface UserResponseDto {
   imageUrl?: string;
   isAdmin: boolean;
   company: {
-    companyCode: string;
+    companyName: string;
   };
 }
 

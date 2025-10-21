@@ -40,7 +40,7 @@ describe('UserService', () => {
       expect(result.name).toBe(signupData.name);
       expect(result.employeeNumber).toBe(signupData.employeeNumber);
       expect(result.phoneNumber).toBe(signupData.phoneNumber);
-      expect(result.company.companyCode).toBe(companyCode);
+      expect(result.company.companyName).toBe('User Test Company');
       expect(result.isAdmin).toBe(false);
     });
 
@@ -96,7 +96,7 @@ describe('UserService', () => {
       expect(result.id).toBe(user.id);
       expect(result.email).toBe(user.email);
       expect(result.name).toBe(user.name);
-      expect(result.company.companyCode).toBe(companyCode);
+      expect(result.company.companyName).toBe('User Test Company');
     });
 
     it('should throw NotFoundError for non-existent userId', async () => {

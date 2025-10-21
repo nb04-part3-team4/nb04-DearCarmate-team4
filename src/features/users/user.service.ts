@@ -34,7 +34,7 @@ export class UserService {
       imageUrl: user.imageUrl || undefined,
       isAdmin: user.isAdmin,
       company: {
-        companyCode: company.companyCode,
+        companyName: company.name,
       },
     };
   }
@@ -110,7 +110,7 @@ export class UserService {
       updateData.phoneNumber = data.phoneNumber;
     }
     if (data.imageUrl !== undefined) {
-      updateData.imageUrl = data.imageUrl;
+      updateData.imageUrl = data.imageUrl ?? undefined;
     }
 
     const updatedUser = await userRepository.update(userId, updateData);

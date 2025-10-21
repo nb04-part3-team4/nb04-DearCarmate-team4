@@ -52,7 +52,9 @@ describe('User API (E2E)', () => {
       expect(response.body.status).toBe('success');
       expect(response.body.data).toHaveProperty('id');
       expect(response.body.data.email).toBe('newuser@example.com');
-      expect(response.body.data.company.companyCode).toBe(companyCode);
+      expect(response.body.data.company.companyName).toBe(
+        'User API Test Company',
+      );
     });
 
     it('should return 400 with invalid company code', async () => {

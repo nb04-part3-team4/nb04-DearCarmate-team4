@@ -122,12 +122,12 @@ class CarService {
       status: car.status,
     };
   }
-  private async getCompanyCode(userId: number) {
+  private async getCompanyId(userId: number) {
     const user = await userService.getMe(userId);
-    return user.company;
+    return user.company.companyName;
   }
-  private async getCompanyId(companyCode: string) {
-    return await companyRepository.findByCompanyCode(companyCode);
+  private async getCompanyByName(companyName: string) {
+    return await companyRepository.findByName(companyName);
   }
   private async getModelId(manufacturer: string, model: string) {
     return await carModelRepository.findUnique({
@@ -166,7 +166,11 @@ class CarService {
    * 단일 차량 생성을 위한 데이터 빌드 (Prisma connect 사용)
    */
   private async buildCarData({ userId, data }: CarRequestDto) {
-    const { companyCode } = await this.getCompanyCode(userId);
+    const companyName = await this.getCompanyId(userId);
+    const company = await this.getCompanyByName(companyName);
+    if (!company) {
+      throw new NotFoundError('해당 회사를 찾을 수 없습니다.');
+    }
     const { manufacturer, model } = data;
     const carModel = await this.getModelId(manufacturer, model);
     if (!carModel) {
@@ -175,7 +179,7 @@ class CarService {
     return {
       ...this.extractBaseCarData(data),
       company: {
-        connect: { companyCode },
+        connect: { id: company.id },
       },
       model: {
         connect: { id: carModel.id },
@@ -203,8 +207,8 @@ class CarService {
    * 대량 차량 생성을 위한 데이터 빌드 (createMany용 - ID 직접 사용)
    */
   private async buildManyCarData({ userId, data }: CarRequestDto) {
-    const { companyCode } = await this.getCompanyCode(userId);
-    const company = await this.getCompanyId(companyCode);
+    const companyName = await this.getCompanyId(userId);
+    const company = await this.getCompanyByName(companyName);
     if (!company) {
       throw new NotFoundError('해당 회사를 찾을 수 없습니다.');
     }
