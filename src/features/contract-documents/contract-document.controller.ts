@@ -10,11 +10,11 @@ const getContractDocuments: RequestHandler = async (req, res, next) => {
   const validationResult = getContractDocumentsQuerySchema.safeParse(req.query);
 
   if (!validationResult.success) {
-    return next(new Error('Invalid query parameters'));
+    return next(new Error('잘못된 요청입니다'));
   }
 
   if (!req.user) {
-    return next(new Error('Unauthorized'));
+    return next(new Error('로그인이 필요합니다'));
   }
 
   const requestDto: GetContractDocumentsRequestDto = {
@@ -26,8 +26,8 @@ const getContractDocuments: RequestHandler = async (req, res, next) => {
     const documents =
       await contractDocumentService.getContractDocuments(requestDto);
 
-    if (!documents || documents.length === 0) {
-      return next(new Error('No documents found'));
+    if (!documents) {
+      return next(new Error('문서를 찾을 수 없습니다'));
     }
 
     res.status(200).json(documents);
@@ -38,7 +38,7 @@ const getContractDocuments: RequestHandler = async (req, res, next) => {
 
 const getContractDrafts: RequestHandler = async (req, res, next) => {
   if (!req.user) {
-    return next(new Error('Unauthorized'));
+    return next(new Error('로그인이 필요합니다'));
   }
 
   const userId = req.user.userId;
@@ -47,7 +47,7 @@ const getContractDrafts: RequestHandler = async (req, res, next) => {
     const drafts = await contractDocumentService.getContractDrafts({ userId });
 
     if (!drafts || drafts.length === 0) {
-      return next(new Error('No drafts found'));
+      return next(new Error('초안을 찾을 수 없습니다'));
     }
 
     res.status(200).json(drafts);
@@ -60,13 +60,12 @@ const uploadContractDocument: RequestHandler = async (req, res, next) => {
   try {
     const file = req.file as Express.Multer.File;
     if (!file) {
-      return next(new Error('No file uploaded'));
+      return next(new Error('파일을 찾을 수 없습니다'));
     }
 
-    const documentId =
-      await contractDocumentService.uploadContractDocument(file);
+    const data = await contractDocumentService.uploadContractDocument(file);
 
-    res.status(201).json(documentId);
+    res.status(201).json({ contractDocumentId: data.documentId });
   } catch (error) {
     next(error);
   }
@@ -76,7 +75,7 @@ const downloadContractDocument: RequestHandler = async (req, res, next) => {
   const validationResult = contractDocumentParamsSchema.safeParse(req.params);
 
   if (!validationResult.success) {
-    return next(new Error('Invalid contractDocumentId'));
+    return next(new Error('잘못된 요청입니다'));
   }
 
   const { contractDocumentId } = validationResult.data;
@@ -86,10 +85,13 @@ const downloadContractDocument: RequestHandler = async (req, res, next) => {
       await contractDocumentService.getContractDocumentById(contractDocumentId);
 
     if (!document || !document.fileUrl) {
-      return next(new Error('File not found.'));
+      return next(new Error('파일을 찾을 수 없습니다'));
     }
 
-    return res.download(document.fileUrl, document.fileName);
+    return res
+      .status(200)
+      .json({ message: '계약서 다운로드 성공' })
+      .download(document.fileUrl, document.fileName);
   } catch (error) {
     next(error);
   }

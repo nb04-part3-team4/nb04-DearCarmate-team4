@@ -18,6 +18,20 @@ const getContractDocuments = async ({
         : {
             userId: userId,
           },
+    select: {
+      id: true,
+      contractName: true,
+      resolutionDate: true,
+
+      // manager: true,
+      user: { select: { name: true } },
+
+      // carNumber: true,
+      car: { select: { carNumber: true } },
+
+      // documentCount: true,
+      documents: { select: { id: true, fileName: true } },
+    },
     skip: (page - 1) * pageSize,
     take: pageSize,
   });

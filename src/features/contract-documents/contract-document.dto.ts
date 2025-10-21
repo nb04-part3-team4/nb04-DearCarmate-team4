@@ -20,22 +20,30 @@ export type GetContractDocumentsRequestDto = z.infer<
 // Response DTOs
 // TODO: Replace with actual response schema from Prisma model
 export const contractDocumentResponseSchema = z.object({
-  contractName: z.string(),
-  userId: z.number(),
-  id: z.number(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-  companyId: z.number(),
-  status: z.string(),
-  carId: z.number(),
-  customerId: z.number(),
-  resolutionDate: z.date().nullable(),
-  contractPrice: z.number(),
+  currentPage: z.number(),
+  totalPages: z.number(),
+  totalItemCount: z.number(),
+  data: z.array(
+    z.object({
+      id: z.number(),
+      contractName: z.string(),
+      resolutionDate: z.date().nullable(),
+      documentCount: z.number(),
+      manager: z.string(),
+      carNumber: z.string(),
+      documents: z.array(
+        z.object({
+          id: z.number(),
+          fileName: z.string(),
+        }),
+      ),
+    }),
+  ),
 });
 
 export const contractDraftResponseSchema = z.object({
   id: z.number(),
-  contractName: z.string(),
+  data: z.string(),
 });
 
 export const uploadContractDocumentResponseSchema = z.object({
@@ -45,7 +53,7 @@ export const uploadContractDocumentResponseSchema = z.object({
 export type ContractDocumentResponseDto = z.infer<
   typeof contractDocumentResponseSchema
 >;
-export type GetContractDocumentsResponseDto = ContractDocumentResponseDto[];
+// export type GetContractDocumentsResponseDto = ContractDocumentResponseDto[];
 
 export type ContractDraftResponseDto = z.infer<
   typeof contractDraftResponseSchema
