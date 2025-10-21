@@ -5,7 +5,6 @@ import { createTestCompany, createTestUser } from '../helpers/test-data';
 
 describe('Auth API (E2E)', () => {
   let companyId: number;
-  let companyCode: string;
   let userEmail: string;
   let userPassword: string;
 
@@ -15,7 +14,6 @@ describe('Auth API (E2E)', () => {
       companyCode: 'AUTHAPI001',
     });
     companyId = company.id;
-    companyCode = company.companyCode;
 
     userEmail = 'authapi@example.com';
     userPassword = 'password123';
@@ -40,7 +38,9 @@ describe('Auth API (E2E)', () => {
       expect(response.body).toHaveProperty('accessToken');
       expect(response.body).toHaveProperty('refreshToken');
       expect(response.body.user.email).toBe(userEmail);
-      expect(response.body.user.company.companyCode).toBe(companyCode);
+      expect(response.body.user.company.companyName).toBe(
+        'Auth API Test Company',
+      );
     });
 
     it('should return 401 with invalid email', async () => {

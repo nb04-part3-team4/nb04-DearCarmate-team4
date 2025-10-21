@@ -15,6 +15,7 @@ import type {
   UpdateMeResponseDto,
   GetUserResponseDto,
   UserResponseDto,
+  GetContractUsersResponseDto,
 } from '@/features/users/user.dto';
 import type { SignupInput, UpdateMeInput } from '@/features/users/user.schema';
 import { User, Company } from '@prisma/client';
@@ -33,7 +34,7 @@ export class UserService {
       imageUrl: user.imageUrl || undefined,
       isAdmin: user.isAdmin,
       company: {
-        companyCode: company.companyCode,
+        companyName: company.name,
       },
     };
   }
@@ -109,7 +110,7 @@ export class UserService {
       updateData.phoneNumber = data.phoneNumber;
     }
     if (data.imageUrl !== undefined) {
-      updateData.imageUrl = data.imageUrl;
+      updateData.imageUrl = data.imageUrl ?? undefined;
     }
 
     const updatedUser = await userRepository.update(userId, updateData);
@@ -143,6 +144,14 @@ export class UserService {
     }
 
     await userRepository.delete(userId);
+  }
+  async getUsersForContract(): Promise<GetContractUsersResponseDto> {
+    const users = await userRepository.findAllUsersForContract();
+
+    return users.map((user) => ({
+      id: user.id,
+      data: `${user.name}(${user.email})`,
+    }));
   }
 }
 

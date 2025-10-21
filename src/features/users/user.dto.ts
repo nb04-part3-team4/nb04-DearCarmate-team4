@@ -7,11 +7,17 @@ export interface UserResponseDto {
   imageUrl?: string;
   isAdmin: boolean;
   company: {
-    companyCode: string;
+    companyName: string;
   };
+}
+
+export interface ContractUserListItemDto {
+  id: number;
+  data: string;
 }
 
 export type SignupResponseDto = UserResponseDto;
 export type GetMeResponseDto = UserResponseDto;
 export type UpdateMeResponseDto = UserResponseDto;
 export type GetUserResponseDto = UserResponseDto;
+export type GetContractUsersResponseDto = ContractUserListItemDto[];

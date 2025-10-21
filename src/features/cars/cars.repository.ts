@@ -69,6 +69,19 @@ class CarRepository {
       where,
     });
   }
+  async findAllCarsForContract() {
+    return await prisma.car.findMany({
+      select: {
+        id: true,
+        carNumber: true,
+        model: {
+          select: {
+            model: true,
+          },
+        },
+      },
+    });
+  }
 }
 
 export default new CarRepository();

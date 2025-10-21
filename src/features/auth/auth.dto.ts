@@ -9,7 +9,7 @@ export interface LoginResponseDto {
     imageUrl?: string;
     isAdmin: boolean;
     company: {
-      companyCode: string;
+      companyName: string;
     };
   };
   accessToken: string;
