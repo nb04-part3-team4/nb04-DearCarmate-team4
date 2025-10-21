@@ -6,6 +6,6 @@ const imageRouter = express.Router();
 
 imageRouter
   .route('/upload')
-  .post(uploadImage.single('image'), ImageController.postImage);
+  .post(uploadImage.single('file'), ImageController.postImage);
 
 export default imageRouter;
