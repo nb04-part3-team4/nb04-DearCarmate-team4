@@ -42,7 +42,7 @@ describe('AuthService', () => {
       expect(result).toHaveProperty('accessToken');
       expect(result).toHaveProperty('refreshToken');
       expect(result.user.email).toBe(userEmail);
-      expect(result.user.company.companyCode).toBe('AUTH001');
+      expect(result.user.company.companyName).toBe('Test Auth Company');
 
       // Verify tokens are valid
       const decodedAccess = verifyAccessToken(result.accessToken);

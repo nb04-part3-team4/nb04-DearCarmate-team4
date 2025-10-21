@@ -46,17 +46,18 @@ export class AuthService {
       throw new UnauthorizedError('이메일 또는 비밀번호가 일치하지 않습니다');
     }
 
-    // 3. JWT 페이로드 생성
-    const payload: JwtPayload = {
-      userId: user.id,
-      email: user.email,
-    };
-
-    // 4. 회사 정보 조회
+    // 3. 회사 정보 조회
     const company = await companyRepository.findById(user.companyId);
     if (!company) {
       throw new NotFoundError('존재하지 않는 회사입니다');
     }
+
+    // 4. JWT 페이로드 생성
+    const payload: JwtPayload = {
+      userId: user.id,
+      email: user.email,
+      companyId: user.companyId,
+    };
 
     // 5. 토큰 생성
     const accessToken = generateAccessToken(payload);
@@ -73,7 +74,7 @@ export class AuthService {
         imageUrl: user.imageUrl || undefined,
         isAdmin: user.isAdmin,
         company: {
-          companyCode: company.companyCode,
+          companyName: company.name,
         },
       },
       accessToken,
@@ -104,17 +105,18 @@ export class AuthService {
         );
       }
 
-      // 3. JWT 페이로드 생성
-      const jwtPayload: JwtPayload = {
-        userId: user.id,
-        email: user.email,
-      };
-
-      // 4. 회사 정보 조회
+      // 3. 회사 정보 조회
       const company = await companyRepository.findById(user.companyId);
       if (!company) {
         throw new NotFoundError('존재하지 않는 회사입니다');
       }
+
+      // 4. JWT 페이로드 생성
+      const jwtPayload: JwtPayload = {
+        userId: user.id,
+        email: user.email,
+        companyId: user.companyId,
+      };
 
       // 5. 토큰 생성
       const accessToken = generateAccessToken(jwtPayload);
@@ -131,7 +133,7 @@ export class AuthService {
           imageUrl: user.imageUrl || undefined,
           isAdmin: user.isAdmin,
           company: {
-            companyCode: company.companyCode,
+            companyName: company.name,
           },
         },
         accessToken,
@@ -196,6 +198,7 @@ export class AuthService {
       const jwtPayload: JwtPayload = {
         userId: user.id,
         email: user.email,
+        companyId: user.companyId,
       };
 
       // 7. 토큰 생성
@@ -213,7 +216,7 @@ export class AuthService {
           imageUrl: user.imageUrl || undefined,
           isAdmin: user.isAdmin,
           company: {
-            companyCode: company.companyCode,
+            companyName: company.name,
           },
         },
         accessToken,
@@ -248,6 +251,7 @@ export class AuthService {
       const payload: JwtPayload = {
         userId: user.id,
         email: user.email,
+        companyId: user.companyId,
       };
 
       const accessToken = generateAccessToken(payload);
