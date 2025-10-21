@@ -1,7 +1,3 @@
-// @/features/customers/customer.dto.js 파일 (추가)
-
-// ... (기존 Customer DTO 정의들)
-
 /**
  * GET /contracts/customers 응답에 사용되는 고객 목록 항목 DTO
  */

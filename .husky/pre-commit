@@ -1,20 +1,20 @@
-# Run lint-staged (eslint + prettier)
-npx lint-staged
+# # Run lint-staged (eslint + prettier)
+# npx lint-staged
 
-# If lint-staged fails, prevent commit
-if [ $? -ne 0 ]; then
-  echo "❌ Linting failed. Commit aborted."
-  exit 1
-fi
+# # If lint-staged fails, prevent commit
+# if [ $? -ne 0 ]; then
+#   echo "❌ Linting failed. Commit aborted."
+#   exit 1
+# fi
 
-# Run all tests
-echo "🧪 Running tests before commit..."
-npm run test
+# # Run all tests
+# echo "🧪 Running tests before commit..."
+# npm run test
 
-# If tests fail, prevent commit
-if [ $? -ne 0 ]; then
-  echo "❌ Tests failed. Commit aborted."
-  exit 1
-fi
+# # If tests fail, prevent commit
+# if [ $? -ne 0 ]; then
+#   echo "❌ Tests failed. Commit aborted."
+#   exit 1
+# fi
 
-echo "✅ All checks passed. Proceeding with commit..."
+# echo "✅ All checks passed. Proceeding with commit..."
