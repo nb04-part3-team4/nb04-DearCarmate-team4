@@ -106,6 +106,18 @@ export class UserRepository {
 
     return { data, total };
   }
+  async findAllUsersForContract() {
+    return await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+  }
 }
 
 export const userRepository = new UserRepository();

@@ -13,6 +13,7 @@ import {
   GetCarsResponseDto,
   UpdateCarRequestDto,
   UploadCarsRequestDto,
+  GetContractCarsResponseDto,
 } from '@/features/cars/cars.dto.js';
 import carModelRepository from '@/features/cars/car-model.repository.js';
 import { userService } from '@/features/users/user.service.js';
@@ -237,6 +238,15 @@ class CarService {
         : {}),
     };
     return { skip, take, where };
+  }
+
+  async getCarsForContract(): Promise<GetContractCarsResponseDto> {
+    const cars = await CarRepository.findAllCarsForContract();
+
+    return cars.map((car) => ({
+      id: car.id,
+      data: `${car.model.model}(${car.carNumber})`,
+    }));
   }
 }
 

@@ -15,6 +15,7 @@ import type {
   UpdateMeResponseDto,
   GetUserResponseDto,
   UserResponseDto,
+  GetContractUsersResponseDto,
 } from '@/features/users/user.dto';
 import type { SignupInput, UpdateMeInput } from '@/features/users/user.schema';
 import { User, Company } from '@prisma/client';
@@ -143,6 +144,14 @@ export class UserService {
     }
 
     await userRepository.delete(userId);
+  }
+  async getUsersForContract(): Promise<GetContractUsersResponseDto> {
+    const users = await userRepository.findAllUsersForContract();
+
+    return users.map((user) => ({
+      id: user.id,
+      data: `${user.name}(${user.email})`,
+    }));
   }
 }
 

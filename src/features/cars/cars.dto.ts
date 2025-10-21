@@ -12,6 +12,12 @@ export interface CarRequestDto {
   data: BaseCarDto;
 }
 
+//계약 차량 조회 DTO
+export interface ContractCarListItemDto {
+  id: number;
+  data: string;
+}
+
 // 차량 요청 DTO
 export type CreateCarRequestDto = CarRequestDto;
 export type UpdateCarRequestDto = CarId & UpdateCarData;
@@ -25,3 +31,5 @@ export type GetCarsResponseDto = z.infer<typeof getCarsResponseSchema>;
 export type GetCarModelsResponseDto = z.infer<
   typeof getCarModelsResponseSchema
 >;
+
+export type GetContractCarsResponseDto = ContractCarListItemDto[];
