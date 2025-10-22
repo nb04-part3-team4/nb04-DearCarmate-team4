@@ -1,5 +1,10 @@
 import nodemailer from 'nodemailer';
 
+interface EmailAttachment {
+  filename: string;
+  path: string;
+}
+
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: Number(process.env.EMAIL_PORT),
@@ -14,7 +19,7 @@ export const sendEmailWithAttachment = async (
   to: string,
   subject: string,
   text: string,
-  attachmentUrl: string,
+  attachments: EmailAttachment[],
 ) => {
   try {
     const mailOptions: nodemailer.SendMailOptions = {
@@ -22,12 +27,7 @@ export const sendEmailWithAttachment = async (
       to,
       subject,
       text,
-      attachments: [
-        {
-          filename: 'contract-document.png',
-          path: attachmentUrl,
-        },
-      ],
+      attachments,
     };
 
     await transporter.sendMail(mailOptions);
