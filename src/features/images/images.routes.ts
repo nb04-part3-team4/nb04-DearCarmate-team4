@@ -1,11 +1,9 @@
 import express from 'express';
 import ImageController from '@/features/images/images.controller';
-import { uploadImage } from '@/shared/middlewares/multer.js';
 
 const imageRouter = express.Router();
 
-imageRouter
-  .route('/upload')
-  .post(uploadImage.single('file'), ImageController.postImage);
+imageRouter.route('/upload').get(ImageController.postImageRequest);
+imageRouter.route('/upload/cloudinary').post(ImageController.postImage);
 
 export default imageRouter;

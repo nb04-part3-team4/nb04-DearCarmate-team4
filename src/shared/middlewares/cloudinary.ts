@@ -17,6 +17,29 @@ cloudinary.config({
 
 const CLOUDINARY_FOLDER = 'team4_images';
 
+export function generateUploadSignature() {
+  try {
+    const timestamp = Math.round(new Date().getTime() / 1000);
+    const paramsToSign = { timestamp: timestamp, folder: CLOUDINARY_FOLDER };
+
+    const signature = cloudinary.utils.api_sign_request(
+      paramsToSign,
+      process.env.CLOUDINARY_API_SECRET!,
+    );
+
+    return {
+      timestamp,
+      signature,
+      apiKey: process.env.CLOUDINARY_API_KEY!,
+      cloudName: process.env.CLOUDINARY_CLOUD_NAME!,
+      folder: paramsToSign.folder,
+    };
+  } catch (error) {
+    console.error('Cloudinary 서명 생성 실패:', error);
+    throw new InternalServerError('이미지 업로드 준비 중 오류가 발생했습니다.');
+  }
+}
+
 /**
  * 로컬 이미지를 Cloudinary에 업로드
  * @param localPath 업로드할 로컬 이미지 경로
