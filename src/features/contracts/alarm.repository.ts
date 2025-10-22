@@ -21,3 +21,4 @@ export class AlarmRepository {
 }
 
 export const alarmRepository = new AlarmRepository();
+

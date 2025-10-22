@@ -44,9 +44,6 @@ export class ContractMapper {
     };
   }
 
-  /**
-   * Contract 목록 항목 DTO로 변환
-   */
   static toListItemDto(contract: ContractWithRelations): ContractListItemDto {
     return {
       id: contract.id,

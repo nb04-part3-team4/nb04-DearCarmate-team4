@@ -56,3 +56,4 @@ export interface GetContractsResponseDto {
 export interface DeleteContractResponseDto {
   message: string;
 }
+
