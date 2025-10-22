@@ -5,7 +5,7 @@ import { adminGuard } from '@/shared/middlewares/admin-guard';
 
 const router: Router = express.Router();
 
-router.post('/', authMiddleware, adminGuard, (req, res, next) =>
+router.post('/', authMiddleware, (req, res, next) =>
   contractController.createContract(req, res, next),
 );
 
@@ -29,7 +29,7 @@ router.get('/cars', authMiddleware, (req, res, next) =>
   contractController.getContractCars(req, res, next),
 );
 
-router.get('/customer', authMiddleware, (req, res, next) =>
+router.get('/customers', authMiddleware, (req, res, next) =>
   contractController.getContractCustomers(req, res, next),
 );
 

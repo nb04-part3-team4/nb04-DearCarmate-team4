@@ -1,5 +1,15 @@
 import { Prisma } from '@prisma/client';
 
+export const CONTRACT_STATUSES = [
+  'carInspection',
+  'priceNegotiation',
+  'contractDraft',
+  'contractSuccessful',
+  'contractFailed',
+] as const;
+
+export type ContractStatus = (typeof CONTRACT_STATUSES)[number];
+
 export const contractFullInclude = {
   user: true,
   customer: true,
@@ -11,7 +21,7 @@ export const contractFullInclude = {
   meetings: {
     include: { alarms: true },
   },
-} as const satisfies Prisma.ContractInclude;
+} as const;
 
 export type ContractWithRelations = Prisma.ContractGetPayload<{
   include: typeof contractFullInclude;
@@ -28,25 +38,13 @@ export interface CreateContractData {
 
 export interface UpdateContractBaseData {
   status?: string;
-  resolutionDate?: string | null;
+  resolutionDate?: Date | null;
   contractPrice?: number;
   userId?: number;
   customerId?: number;
   carId?: number;
   contractName?: string;
 }
-
-export type TxClient = Prisma.TransactionClient;
-
-export const CONTRACT_STATUSES = [
-  'carInspection',
-  'priceNegotiation',
-  'contractDraft',
-  'contractSuccessful',
-  'contractFailed',
-] as const;
-
-export type ContractStatus = (typeof CONTRACT_STATUSES)[number];
 
 export interface MeetingInput {
   date: string;
@@ -57,3 +55,5 @@ export interface AlarmInput {
   meetingId: number;
   alarmTime: string;
 }
+
+export type TxClient = Prisma.TransactionClient;

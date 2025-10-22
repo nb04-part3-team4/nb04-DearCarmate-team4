@@ -15,7 +15,7 @@ import contractDocumentRoutes from '@/features/contract-documents/contract-docum
 import contractRoutes from '@/features/contracts/contract.routes.js';
 import dashboardRoutes from '@/features/dashboard/dashboard.routes.js';
 import { specs } from '@/documentation/swagger.config.js';
-
+import customerRoutes from '@/features/customers/customer.routes.js';//
 const app: Application = express();
 
 app.use(cors());
@@ -35,6 +35,7 @@ app.use('/admin', adminRoutes);
 app.use('/companies', companyRoutes);
 app.use('/contracts', contractRoutes);
 app.use('/contractDocuments', contractDocumentRoutes);
+app.use('/customers', customerRoutes);//
 app.use('/dashboard', dashboardRoutes);
 
 app.get('/health', (_req, res) => {
