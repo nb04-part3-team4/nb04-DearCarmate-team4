@@ -140,10 +140,12 @@ export class ContractController {
     next: NextFunction,
   ): Promise<void> {
     try {
-      if (!req.user || !req.user.userId) {
+      if (!req.user || !req.user.companyId) {
         throw new UnauthorizedError('로그인이 필요합니다');
       }
-      const customers = await customerService.getCustomersForContract();
+      const customers = await customerService.getCustomersForContract(
+        req.user.companyId,
+      );
       res.status(200).json(customers);
     } catch (error) {
       next(error);
