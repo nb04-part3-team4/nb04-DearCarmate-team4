@@ -37,13 +37,14 @@ export class ContractRepository {
     id: number,
     data: UpdateContractBaseData,
   ): Promise<void> {
-
     const updateData: Prisma.ContractUpdateInput = {
       status: data.status,
       resolutionDate: data.resolutionDate,
       contractPrice: data.contractPrice,
       ...(data.userId && { user: { connect: { id: data.userId } } }),
-      ...(data.customerId && {customer: { connect: { id: data.customerId } }}),
+      ...(data.customerId && {
+        customer: { connect: { id: data.customerId } },
+      }),
       ...(data.carId && { car: { connect: { id: data.carId } } }),
       ...(data.contractName && { contractName: data.contractName }),
     };

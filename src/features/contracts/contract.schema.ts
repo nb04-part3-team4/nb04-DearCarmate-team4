@@ -12,6 +12,14 @@ const MeetingSchema = z.object({
   alarms: z.array(AlarmSchema),
 });
 
+const ContractDocumentSchema = z.object({
+  id: z
+    .number()
+    .int()
+    .positive({ message: 'A valid document ID is required.' }),
+  fileName: z.string().min(1, { message: 'File name is required.' }),
+});
+
 export const createContractSchema = z.object({
   carId: z.number().int().positive({ message: 'A valid car ID is required.' }),
   customerId: z
@@ -23,19 +31,30 @@ export const createContractSchema = z.object({
 
 const simpleDateRegex = /^\d{4}-\d{2}-\d{2}$/;
 
-const ResolutionDateSchema = z.preprocess((value) => {
-    return value;
+const ResolutionDateSchema = z
+  .preprocess(
+    (value) => {
+      return value;
+    },
+    z.union([
+      z.string().refine(
+        (val) => {
+          const isIso = !isNaN(new Date(val).getTime());
+          const isSimpleDate = simpleDateRegex.test(val);
+          return isIso || isSimpleDate;
+        },
+        {
+          message:
+            '유효한 ISO 8601 (타임존 생략 가능) 또는 YYYY-MM-DD 날짜 문자열이 필요합니다.',
+        },
+      ),
 
-}, z.union([
-    z.string().refine(val => {
-       const isIso = !isNaN(new Date(val).getTime());
-       const isSimpleDate = simpleDateRegex.test(val);
-       return isIso || isSimpleDate;
-    }, { message: '유효한 ISO 8601 (타임존 생략 가능) 또는 YYYY-MM-DD 날짜 문자열이 필요합니다.' }),
-    
-    z.number(),
-    z.literal(null),
-])).nullable().optional();
+      z.number(),
+      z.literal(null),
+    ]),
+  )
+  .nullable()
+  .optional();
 
 export const updateContractSchema = z
   .object({
@@ -49,13 +68,8 @@ export const updateContractSchema = z
     userId: z.number().int().positive().optional(),
     customerId: z.number().int().positive().optional(),
     carId: z.number().int().positive().optional(),
-    meetings: z
-      .array(
-        z.object({
-          /* ... */
-        }),
-      )
-      .optional(),
+    meetings: z.array(MeetingSchema).optional(),
+    contractDocuments: z.array(ContractDocumentSchema).optional(),
   })
   .refine(
     (data) => {

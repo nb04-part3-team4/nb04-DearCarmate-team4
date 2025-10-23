@@ -1,7 +1,6 @@
 import express, { Router } from 'express';
 import { contractController } from '@/features/contracts/contract.controller';
 import { authMiddleware } from '@/shared/middlewares/auth';
-import { adminGuard } from '@/shared/middlewares/admin-guard';
 
 const router: Router = express.Router();
 

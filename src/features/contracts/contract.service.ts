@@ -21,9 +21,14 @@ import {
   ContractStatus,
   ContractWithRelations,
   CarStatus,
+  TxClient,
 } from '@/features/contracts/contract.type';
 import { ContractMapper } from '@/features/contracts/contract.mapper';
 import { customerRepository } from '@/features/customers/customer.repository';
+import {
+  unlinkDocumentsByContractId,
+  linkDocumentsToContract,
+} from '@/features/contract-documents/contract-document.repository';
 
 export class ContractService {
   private static readonly ERROR_MESSAGES = {
@@ -201,6 +206,7 @@ export class ContractService {
       carId,
       status,
       resolutionDate,
+      contractDocuments,
       ...baseContractData
     } = data;
 
@@ -225,7 +231,8 @@ export class ContractService {
       meetings === undefined &&
       userId === undefined &&
       customerId === undefined &&
-      carId === undefined;
+      carId === undefined &&
+      contractDocuments === undefined;
 
     if (isOnlyStatusUpdate) {
       return this.updateContractStatus(
@@ -246,6 +253,7 @@ export class ContractService {
       customerId,
       carId,
       meetings,
+      contractDocuments,
       ...(processedResolutionDate !== undefined && {
         resolutionDate:
           processedResolutionDate instanceof Date
@@ -266,7 +274,7 @@ export class ContractService {
   }
 
   private async updateCarStatusInTransaction(
-    tx: any,
+    tx: TxClient,
     carId: number,
     carStatus: CarStatus,
   ): Promise<void> {
@@ -361,6 +369,17 @@ export class ContractService {
               }
             }),
           );
+        }
+      }
+
+      // 4. 계약 문서 업데이트 로직
+      if (data.contractDocuments !== undefined) {
+        // 기존 문서 연결 해제 (contract-documents repository 사용)
+        await unlinkDocumentsByContractId(tx, contractId);
+
+        // 새 문서 연결 (contract-documents repository 사용)
+        if (data.contractDocuments.length > 0) {
+          await linkDocumentsToContract(tx, contractId, data.contractDocuments);
         }
       }
 

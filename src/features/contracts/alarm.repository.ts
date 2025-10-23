@@ -8,17 +8,16 @@ export class AlarmRepository {
     data: Pick<AlarmInput, 'meetingId' | 'alarmTime'>,
   ): Promise<Alarm> {
     const date = new Date(data.alarmTime);
-    if(isNaN(date.getTime())) {
+    if (isNaN(date.getTime())) {
       throw new Error('Invalid alarm time format');
     }
     return await tx.alarm.create({
       data: {
         meeting: { connect: { id: data.meetingId } },
-        alarmTime: new Date,
+        alarmTime: date,
       },
     });
   }
 }
 
 export const alarmRepository = new AlarmRepository();
-

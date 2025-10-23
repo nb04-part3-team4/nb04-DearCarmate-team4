@@ -3,7 +3,9 @@ import { Customer } from '@prisma/client';
 import { CreateCustomerInput, UpdateCustomerInput } from './customer.schema';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type CustomerWithContractCount = Customer & { _count: { contracts: number } };
+export type CustomerWithContractCount = Customer & {
+  _count: { contracts: number };
+};
 
 export class CustomerRepository {
   async create(

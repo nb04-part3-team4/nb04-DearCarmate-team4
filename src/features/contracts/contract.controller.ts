@@ -170,4 +170,3 @@ export class ContractController {
 }
 
 export const contractController = new ContractController();
-

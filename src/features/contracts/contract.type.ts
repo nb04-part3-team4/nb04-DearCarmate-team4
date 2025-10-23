@@ -21,6 +21,7 @@ export const contractFullInclude = {
   meetings: {
     include: { alarms: true },
   },
+  documents: true,
 } as const;
 
 export type ContractWithRelations = Prisma.ContractGetPayload<{
@@ -46,7 +47,8 @@ export interface UpdateContractBaseData {
   contractName?: string;
 }
 
-export interface MeetingInput {
+// Meeting 타입 (Input과 Response가 동일하므로 하나로 통일)
+export interface MeetingDto {
   date: string;
   alarms: string[];
 }
@@ -54,6 +56,12 @@ export interface MeetingInput {
 export interface AlarmInput {
   meetingId: number;
   alarmTime: string;
+}
+
+// ContractDocument 타입 (Input과 Response가 동일하므로 하나로 통일)
+export interface ContractDocumentDto {
+  id: number;
+  fileName: string;
 }
 
 export type TxClient = Prisma.TransactionClient;

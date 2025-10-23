@@ -3,7 +3,10 @@ import {
   CustomerWithContractCount,
 } from './customer.repository';
 import { NotFoundError } from '@/shared/middlewares/custom-error';
-import { CreateCustomerInput, UpdateCustomerInput } from '@/features/customers/customer.schema';
+import {
+  CreateCustomerInput,
+  UpdateCustomerInput,
+} from '@/features/customers/customer.schema';
 import {
   CreateCustomerResponseDto,
   GetCustomersResponseDto,

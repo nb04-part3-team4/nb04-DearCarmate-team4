@@ -1,14 +1,16 @@
-import type { ContractWithRelations } from '@/features/contracts/contract.type';
+import type {
+  ContractWithRelations,
+  MeetingDto,
+} from '@/features/contracts/contract.type';
 import type {
   ContractDetailResponseDto,
   ContractListItemDto,
-  MeetingResponseDto,
 } from '@/features/contracts/contract.dto';
 
 export class ContractMapper {
   private static toMeetingDto(
     meeting: ContractWithRelations['meetings'][number],
-  ): MeetingResponseDto {
+  ): MeetingDto {
     return {
       date: meeting.date.toISOString(),
       alarms: meeting.alarms.map((a) => a.alarmTime.toISOString()),
@@ -41,6 +43,10 @@ export class ContractMapper {
         model: contract.car.model.model,
       },
       meetings: contract.meetings.map((m) => this.toMeetingDto(m)),
+      contractDocuments: contract.documents.map((doc) => ({
+        id: doc.id,
+        fileName: doc.fileName,
+      })),
     };
   }
 
