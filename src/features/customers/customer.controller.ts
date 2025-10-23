@@ -73,7 +73,10 @@ export class CustomerController {
         throw new BadRequestError('잘못된 고객 ID입니다.');
       }
 
-      const result = await customerService.getCustomerById(customerId, companyId);
+      const result = await customerService.getCustomerById(
+        customerId,
+        companyId,
+      );
 
       const response: SuccessResponse<GetCustomerResponseDto> = {
         status: 'success',

@@ -1,5 +1,3 @@
-import { Customer } from '@prisma/client';
-
 export interface CustomerResponseDto {
   id: number;
   name: string;

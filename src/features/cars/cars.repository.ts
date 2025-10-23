@@ -6,10 +6,10 @@ import {
   GetListInput,
   UpdateCarInput,
 } from '@/features/cars/cars.type.js';
-import { Prisma } from '@prisma/client';
+import { Prisma, CarStatus } from '@prisma/client';
 
 type UpdateCarStatusData = {
-  status: string;
+  status: CarStatus;
 };
 
 class CarRepository {
@@ -86,11 +86,11 @@ class CarRepository {
       },
     });
   }
-async updateInTx(
-    tx: any,
-    carId: number, 
-    data: UpdateCarInput['data'] | UpdateCarStatusData 
-  ): Promise<void> { 
+  async updateInTx(
+    tx: Prisma.TransactionClient,
+    carId: number,
+    data: UpdateCarInput['data'] | UpdateCarStatusData,
+  ): Promise<void> {
     await tx.car.update({
       where: {
         id: carId,
