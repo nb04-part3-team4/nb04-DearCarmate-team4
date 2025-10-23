@@ -5,6 +5,7 @@ import {
   type UploadContractDocumentResponseDto,
   type ContractDocumentResponseDto,
 } from './contract-document.dto';
+import { BadRequestError } from '@/shared/middlewares/custom-error';
 
 export const getContractDocuments = async (
   requestDto: GetContractDocumentsRequestDto,
@@ -18,7 +19,7 @@ export const getContractDocuments = async (
     id: contract.id,
     contractName: contract.contractName,
     resolutionDate: contract.resolutionDate,
-    manager: contract.user.name,
+    userName: contract.user.name,
     carNumber: contract.car.carNumber,
     documentCount: contract.documents.length,
     documents: contract.documents,
@@ -57,14 +58,12 @@ export const uploadContractDocument = async (
     });
 
   if (!uploadedDocument) {
-    throw new Error('문서를 업로드할 수 없습니다');
+    throw new BadRequestError('문서를 업로드할 수 없습니다');
   }
 
   return { documentId: uploadedDocument.id };
 };
 
 export const getContractDocumentById = async (id: number) => {
-  // This service function is used for file download and might not need a DTO.
-  // Returning the full model is acceptable here.
   return await contractDocumentRepository.findContractDocumentById(id);
 };

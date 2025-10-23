@@ -1,4 +1,5 @@
 import prisma from '../../shared/middlewares/prisma';
+import { Prisma } from '@prisma/client';
 import type { GetContractDocumentsRequestDto } from './contract-document.dto';
 
 const getContractDocuments = async ({
@@ -8,16 +9,23 @@ const getContractDocuments = async ({
   keyword,
   userId,
 }: GetContractDocumentsRequestDto) => {
+  const whereClause: Prisma.ContractWhereInput = {
+    userId,
+    status: 'contractSuccessful',
+    documents: { some: {} },
+  };
+
   const contracts = await prisma.contract.findMany({
-    where:
-      searchBy && keyword
+    where: {
+      ...whereClause,
+      ...(searchBy && keyword
         ? {
-            [searchBy]: { contains: keyword },
-            userId: userId,
+            [searchBy]: {
+              contains: keyword,
+            },
           }
-        : {
-            userId: userId,
-          },
+        : {}),
+    },
     select: {
       id: true,
       contractName: true,
@@ -41,7 +49,7 @@ const getContractDocuments = async ({
 
 const getContractDrafts = async ({ userId }: { userId: number }) => {
   const drafts = await prisma.contract.findMany({
-    where: { userId, status: 'DRAFT' }, // 검증 필요
+    where: { userId, status: 'contractSuccessful', documents: { none: {} } },
     select: { id: true, contractName: true },
   });
 
