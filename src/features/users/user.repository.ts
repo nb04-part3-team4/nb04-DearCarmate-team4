@@ -9,6 +9,7 @@ export interface CreateUserInput {
   employeeNumber: string;
   phoneNumber?: string;
   imageUrl?: string;
+  authProvider?: string;
   companyId: number;
 }
 

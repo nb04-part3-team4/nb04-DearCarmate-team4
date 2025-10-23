@@ -5,6 +5,7 @@ import {
   refreshTokenSchema,
   googleLoginSchema,
   googleSignupSchema,
+  googleReauthSchema,
 } from '@/features/auth/auth.schema';
 
 export class AuthController {
@@ -59,6 +60,22 @@ export class AuthController {
       const result = await authService.refreshAccessToken(
         validatedData.refreshToken,
       );
+
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async googleReauth(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const validatedData = googleReauthSchema.parse(req.body);
+      const userId = req.user!.userId;
+      const result = await authService.googleReauth(validatedData, userId);
 
       res.status(200).json(result);
     } catch (error) {

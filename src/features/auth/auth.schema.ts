@@ -27,7 +27,12 @@ export const googleSignupSchema = z.object({
   companyCode: z.string().min(1, '기업 인증코드를 입력해주세요'),
 });
 
+export const googleReauthSchema = z.object({
+  token: z.string().min(1, 'Google 토큰이 필요합니다'),
+});
+
 export type LoginRequestDto = z.infer<typeof loginSchema>;
 export type RefreshTokenRequestDto = z.infer<typeof refreshTokenSchema>;
 export type GoogleLoginRequestDto = z.infer<typeof googleLoginSchema>;
 export type GoogleSignupRequestDto = z.infer<typeof googleSignupSchema>;
+export type GoogleReauthRequestDto = z.infer<typeof googleReauthSchema>;

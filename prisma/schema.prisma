@@ -47,6 +47,7 @@ model User {
   phoneNumber    String?  @map("phone_number")
   imageUrl       String?  @map("image_url")
   isAdmin        Boolean  @default(false) @map("is_admin")
+  authProvider   String   @default("local") @map("auth_provider") // local, google
   companyId      Int      @map("company_id")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
