@@ -1,6 +1,7 @@
 import prisma from '../../shared/middlewares/prisma';
 import { Prisma } from '@prisma/client';
 import type { GetContractDocumentsRequestDto } from './contract-document.dto';
+import type { Prisma } from '@prisma/client';
 
 const getContractDocuments = async ({
   page,
@@ -82,9 +83,41 @@ const findContractDocumentById = async (id: number) => {
   });
 };
 
+// 트랜잭션 지원 메서드: 기존 문서 연결 해제
+const unlinkDocumentsByContractId = async (
+  tx: Prisma.TransactionClient,
+  contractId: number,
+) => {
+  return await tx.contractDocument.updateMany({
+    where: { contractId },
+    data: { contractId: null },
+  });
+};
+
+// 트랜잭션 지원 메서드: 문서를 계약에 연결
+const linkDocumentsToContract = async (
+  tx: Prisma.TransactionClient,
+  contractId: number,
+  documents: Array<{ id: number; fileName: string }>,
+) => {
+  return await Promise.all(
+    documents.map((doc) =>
+      tx.contractDocument.update({
+        where: { id: doc.id },
+        data: {
+          contractId,
+          fileName: doc.fileName,
+        },
+      }),
+    ),
+  );
+};
+
 export {
   getContractDocuments,
   getContractDrafts,
   uploadContractDocument,
   findContractDocumentById,
+  unlinkDocumentsByContractId,
+  linkDocumentsToContract,
 };

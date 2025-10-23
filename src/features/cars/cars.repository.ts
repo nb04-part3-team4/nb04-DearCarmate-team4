@@ -6,7 +6,11 @@ import {
   GetListInput,
   UpdateCarInput,
 } from '@/features/cars/cars.type.js';
-import { Prisma } from '@prisma/client';
+import { Prisma, CarStatus } from '@prisma/client';
+
+type UpdateCarStatusData = {
+  status: CarStatus;
+};
 
 class CarRepository {
   async findById({ carId }: CarId): Promise<CarWithModel | null> {
@@ -82,6 +86,17 @@ class CarRepository {
       },
     });
   }
+  async updateInTx(
+    tx: Prisma.TransactionClient,
+    carId: number,
+    data: UpdateCarInput['data'] | UpdateCarStatusData,
+  ): Promise<void> {
+    await tx.car.update({
+      where: {
+        id: carId,
+      },
+      data,
+    });
+  }
 }
-
 export default new CarRepository();

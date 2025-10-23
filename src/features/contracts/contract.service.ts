@@ -17,15 +17,105 @@ import {
 } from '@/features/contracts/contract.dto';
 import { userRepository } from '@/features/users/user.repository';
 import prisma from '@/shared/middlewares/prisma';
-import { ContractWithRelations } from '@/features/contracts/contract.type';
+import {
+  ContractStatus,
+  ContractWithRelations,
+  CarStatus,
+  TxClient,
+} from '@/features/contracts/contract.type';
 import { ContractMapper } from '@/features/contracts/contract.mapper';
-import { customerRepository } from '../customers/customer.repository';
+import { customerRepository } from '@/features/customers/customer.repository';
+import {
+  unlinkDocumentsByContractId,
+  linkDocumentsToContract,
+} from '@/features/contract-documents/contract-document.repository';
 
 export class ContractService {
-  private static readonly NEXT_STATUS: Record<string, string> = {
-    carInspection: 'priceNegotiation',
-    priceNegotiation: 'contractDraft',
-  };
+  private static readonly ERROR_MESSAGES = {
+    CAR_NOT_FOUND: '존재하지 않는 자동차입니다',
+    CUSTOMER_NOT_FOUND: '존재하지 않는 고객입니다',
+    CONTRACT_NOT_FOUND: '존재하지 않는 계약입니다',
+    USER_NOT_FOUND: '존재하지 않는 담당자입니다',
+    FORBIDDEN_UPDATE: '담당자만 수정이 가능합니다',
+    FORBIDDEN_DELETE: '담당자만 삭제가 가능합니다',
+    MISSING_COMPANY_ID: '회사 ID를 찾을 수 없습니다',
+    TRANSACTION_FAILED: '트랜잭션 실패: 계약 정보를 찾을 수 없습니다',
+    INVALID_DATE_FORMAT: '유효하지 않은 날짜 형식입니다',
+  } as const;
+
+  private static readonly NEXT_STATUS: Record<ContractStatus, ContractStatus> =
+    {
+      carInspection: 'priceNegotiation',
+      priceNegotiation: 'contractDraft',
+      contractDraft: 'contractSuccessful',
+      contractSuccessful: 'contractSuccessful',
+      contractFailed: 'contractFailed',
+    } as const;
+
+  private mapContractStatusToCarStatus(
+    contractStatus: ContractStatus,
+  ): CarStatus {
+    switch (contractStatus) {
+      case 'contractDraft':
+        return 'contractProceeding';
+      case 'contractSuccessful':
+        return 'contractCompleted';
+      case 'contractFailed':
+      case 'carInspection':
+      case 'priceNegotiation':
+      default:
+        return 'possession';
+    }
+  }
+
+  private processResolutionDate(date: unknown): Date | null | undefined {
+    if (date === undefined || date === null) {
+      return date;
+    }
+
+    try {
+      if (typeof date === 'string') {
+        const trimmed = date.trim();
+        if (trimmed === '') return null;
+        return trimmed.length === 10
+          ? new Date(`${trimmed}T00:00:00.000Z`)
+          : new Date(trimmed);
+      }
+
+      if (typeof date === 'number') {
+        return new Date(date);
+      }
+
+      if (date instanceof Date) return date;
+      throw new Error(ContractService.ERROR_MESSAGES.INVALID_DATE_FORMAT);
+    } catch {
+      throw new Error(ContractService.ERROR_MESSAGES.INVALID_DATE_FORMAT);
+    }
+  }
+
+  private _buildContractName(
+    carModelId: string | number,
+    customerName: string,
+  ): string {
+    return `${carModelId} - ${customerName} 고객님`;
+  }
+
+  private async _fetchAndBuildContractName(
+    carId: number,
+    customerId: number,
+    companyId: number,
+  ): Promise<string> {
+    const [car, customer] = await Promise.all([
+      CarRepository.findById({ carId }),
+      customerRepository.findById(customerId, companyId),
+    ]);
+
+    if (!car || !customer) {
+      throw new NotFoundError('차량 또는 고객 정보를 찾을 수 없습니다');
+    }
+
+    return this._buildContractName(car.modelId, customer.name);
+  }
 
   async createContract(
     validatedData: CreateContractDto,
@@ -33,62 +123,74 @@ export class ContractService {
   ): Promise<ContractDetailResponseDto> {
     const { carId, customerId, meetings } = validatedData;
 
-    const existingCar = await CarRepository.findById({ carId });
-    if (!existingCar) {
-      throw new NotFoundError('존재하지 않는 자동차입니다');
-    }
-    const existingCustomer = await customerRepository.findById(customerId);
-    if (!existingCustomer) {
-      throw new NotFoundError('존재하지 않는 고객입니다');
+    const car = await CarRepository.findById({ carId });
+    if (!car) {
+      throw new NotFoundError(ContractService.ERROR_MESSAGES.CAR_NOT_FOUND);
     }
 
-    const contractPrice = existingCar.price;
-    const companyId = existingCar.companyId;
+    const customer = await customerRepository.findById(
+      customerId,
+      car.companyId,
+    );
+    if (!customer) {
+      throw new NotFoundError(
+        ContractService.ERROR_MESSAGES.CUSTOMER_NOT_FOUND,
+      );
+    }
 
-    const contractName = `${existingCar.modelId} - ${existingCustomer.name} 고객님`;
+    const contractName = this._buildContractName(car.modelId, customer.name);
+
+    const initialContractStatus: ContractStatus = 'carInspection';
+    const initialCarStatus = this.mapContractStatusToCarStatus(
+      initialContractStatus,
+    );
 
     const finalContract = await prisma.$transaction(async (tx) => {
-      const createdContract = await contractRepository.create(tx, {
-        companyId,
+      const contract = await contractRepository.create(tx, {
+        companyId: car.companyId,
         userId,
         carId,
         customerId,
-        contractPrice,
-        contractName,
+        contractPrice: car.price,
+        contractName: contractName,
       });
 
-      if (meetings && meetings.length > 0) {
-        for (const meeting of meetings) {
-          const createdMeeting = await meetingRepository.create(tx, {
-            contractId: createdContract.id,
-            date: meeting.date,
-          });
+      // 💡 CarStatus 업데이트 (생성 시)
+      await this.updateCarStatusInTransaction(tx, carId, initialCarStatus);
 
-          if (meeting.alarms && meeting.alarms.length > 0) {
-            const alarmPromises = meeting.alarms.map((alarmTime) =>
-              alarmRepository.create(tx, {
-                meetingId: createdMeeting.id,
-                alarmTime: alarmTime,
-              }),
-            );
-            await Promise.all(alarmPromises);
-          }
-        }
+      if (meetings?.length) {
+        await Promise.all(
+          meetings.map(async (meeting) => {
+            const createdMeeting = await meetingRepository.create(tx, {
+              contractId: contract.id,
+              date: meeting.date,
+            });
+
+            if (meeting.alarms?.length) {
+              await Promise.all(
+                meeting.alarms.map((alarmTime) =>
+                  alarmRepository.create(tx, {
+                    meetingId: createdMeeting.id,
+                    alarmTime,
+                  }),
+                ),
+              );
+            }
+          }),
+        );
       }
 
-      // 트랜잭션 일관성: 같은 tx 내에서 최종 조회
       const contractWithRelations = await contractRepository.findById(
         tx,
-        createdContract.id,
+        contract.id,
       );
-
       if (!contractWithRelations) {
-        throw new Error('계약 생성 후 정보 조회 실패: 트랜잭션 롤백');
+        throw new Error(ContractService.ERROR_MESSAGES.TRANSACTION_FAILED);
       }
+
       return contractWithRelations;
     });
 
-    // Single Responsibility: Mapper가 DTO 변환 담당
     return ContractMapper.toDetailDto(finalContract);
   }
 
@@ -97,109 +199,250 @@ export class ContractService {
     data: UpdateContractDto,
     requestUserId: number,
   ): Promise<ContractDetailResponseDto> {
-    const { meetings, userId, customerId, carId, status, ...baseContractData } =
-      data;
+    const {
+      meetings,
+      userId,
+      customerId,
+      carId,
+      status,
+      resolutionDate,
+      contractDocuments,
+      ...baseContractData
+    } = data;
 
     const existingContract = await contractRepository.findById(
       prisma,
       contractId,
     );
-
     if (!existingContract) {
-      throw new NotFoundError('존재하지 않는 계약입니다');
+      throw new NotFoundError(
+        ContractService.ERROR_MESSAGES.CONTRACT_NOT_FOUND,
+      );
     }
 
     if (existingContract.userId !== requestUserId) {
-      throw new ForbiddenError('담당자만 수정이 가능합니다');
+      throw new ForbiddenError(ContractService.ERROR_MESSAGES.FORBIDDEN_UPDATE);
     }
 
+    const processedResolutionDate = this.processResolutionDate(resolutionDate);
     const isOnlyStatusUpdate =
       status !== undefined &&
       Object.keys(baseContractData).length === 0 &&
-      !meetings &&
+      meetings === undefined &&
       userId === undefined &&
       customerId === undefined &&
-      carId === undefined;
+      carId === undefined &&
+      contractDocuments === undefined;
 
     if (isOnlyStatusUpdate) {
-      await contractRepository.update(prisma, contractId, { status: status });
-
-      const updatedContract = await contractRepository.findById(
-        prisma,
+      return this.updateContractStatus(
         contractId,
+        existingContract.carId,
+        status as ContractStatus,
+        processedResolutionDate,
       );
-
-      if (!updatedContract) {
-        throw new Error('상태 업데이트 후 계약 정보를 찾을 수 없습니다.');
-      }
-      return ContractMapper.toDetailDto(updatedContract);
     }
 
-    if (userId) {
-      const existingUser = await userRepository.findById(userId);
-      if (!existingUser) {
-        throw new NotFoundError('존재하지 않는 담당자 ID입니다.');
-      }
-    }
+    const updateData: Omit<UpdateContractDto, 'resolutionDate'> & {
+      status?: ContractStatus;
+      resolutionDate?: Date | null;
+    } = {
+      ...baseContractData,
+      status: status as ContractStatus,
+      userId,
+      customerId,
+      carId,
+      meetings,
+      contractDocuments,
+      ...(processedResolutionDate !== undefined && {
+        resolutionDate:
+          processedResolutionDate instanceof Date
+            ? processedResolutionDate
+            : processedResolutionDate,
+      }),
+    };
 
-    if (customerId) {
-      const existingCustomer = await customerRepository.findById(customerId);
-      if (!existingCustomer) {
-        throw new NotFoundError('존재하지 않는 고객 ID입니다.');
-      }
-    }
+    return this.updateFullContract(
+      contractId,
+      existingContract.carId,
+      updateData as UpdateContractDto & {
+        resolutionDate?: Date | null;
+        status?: ContractStatus;
+      },
+      existingContract.companyId,
+    );
+  }
 
-    if (carId) {
-      const existingCar = await CarRepository.findById({ carId });
-      if (!existingCar) {
-        throw new NotFoundError('존재하지 않는 차량 ID입니다.');
-      }
-    }
-    let newContractName: string = '';
+  private async updateCarStatusInTransaction(
+    tx: TxClient,
+    carId: number,
+    carStatus: CarStatus,
+  ): Promise<void> {
+    // 💡 CarRepository의 updateInTx 메서드를 호출하도록 수정
+    await CarRepository.updateInTx(tx, carId, {
+      status: carStatus,
+    });
+  }
 
-    if (carId && customerId) {
-      const car = await CarRepository.findById({ carId });
-      const customer = await customerRepository.findById(customerId);
+  private async updateContractStatus(
+    contractId: number,
+    carId: number,
+    status: ContractStatus,
+    resolutionDate: Date | null | undefined,
+  ): Promise<ContractDetailResponseDto> {
+    // 💡 newCarStatus 변수 정의 추가 (오류 4 해결)
+    const newCarStatus = this.mapContractStatusToCarStatus(status);
 
-      if (!car || !customer) {
-        throw new NotFoundError('차량 또는 고객 정보를 찾을 수 없습니다.');
-      }
-      newContractName = `${car.modelId} - ${customer.name} 고객님`;
-    }
-    const updatedContractDBResult = await prisma.$transaction(async (tx) => {
+    const updatedContract = await prisma.$transaction(async (tx) => {
+      // 1. 계약 업데이트
       await contractRepository.update(tx, contractId, {
-        ...baseContractData,
-        userId,
-        customerId,
-        carId,
-        ...(status !== undefined && { status }),
-        contractName: newContractName,
+        status,
+        ...(resolutionDate !== undefined && { resolutionDate }),
       });
-      if (meetings !== undefined) {
+      // 2. 차량 상태 업데이트
+      await this.updateCarStatusInTransaction(tx, carId, newCarStatus);
+
+      const contract = await contractRepository.findById(tx, contractId);
+      if (!contract) {
+        throw new Error(ContractService.ERROR_MESSAGES.TRANSACTION_FAILED);
+      }
+      return contract;
+    });
+
+    return ContractMapper.toDetailDto(updatedContract);
+  }
+
+  private async updateFullContract(
+    contractId: number,
+    originalCarId: number,
+    data: UpdateContractDto & {
+      resolutionDate?: Date | null;
+      status?: ContractStatus;
+    },
+    companyId: number,
+  ): Promise<ContractDetailResponseDto> {
+    await this.validateUpdateData(data, companyId);
+
+    const currentCarId = data.carId || originalCarId;
+
+    const updatedContract = await prisma.$transaction(async (tx) => {
+      // 1. 계약 업데이트
+      await contractRepository.update(tx, contractId, {
+        ...data,
+        ...(data.carId &&
+          data.customerId && {
+            contractName: await this._fetchAndBuildContractName(
+              data.carId,
+              data.customerId,
+              companyId,
+            ),
+          }),
+      });
+
+      // 2. 상태 필드가 포함되어 있으면 차량 상태 업데이트
+      if (data.status) {
+        const newCarStatus = this.mapContractStatusToCarStatus(data.status);
+        await this.updateCarStatusInTransaction(tx, currentCarId, newCarStatus);
+      }
+
+      // 3. 미팅 업데이트 로직 (이전과 동일)
+      if (data.meetings !== undefined) {
         await meetingRepository.deleteManyByContractId(tx, contractId);
-        for (const meeting of meetings) {
-          const createdMeeting = await meetingRepository.create(tx, {
-            contractId,
-            date: meeting.date,
-          });
-          if (meeting.alarms && meeting.alarms.length > 0) {
-            const alarmPromises = meeting.alarms.map((alarmTime) =>
-              alarmRepository.create(tx, {
-                meetingId: createdMeeting.id,
-                alarmTime,
-              }),
-            );
-            await Promise.all(alarmPromises);
-          }
+        if (data.meetings.length) {
+          await Promise.all(
+            data.meetings.map(async (meeting) => {
+              const createdMeeting = await meetingRepository.create(tx, {
+                contractId,
+                date: meeting.date,
+              });
+
+              const alarms = meeting.alarms as string[] | undefined;
+              if (alarms?.length) {
+                await Promise.all(
+                  alarms.map((alarmTime: string) =>
+                    alarmRepository.create(tx, {
+                      meetingId: createdMeeting.id,
+                      alarmTime,
+                    }),
+                  ),
+                );
+              }
+            }),
+          );
         }
       }
+
+      // 4. 계약 문서 업데이트 로직
+      if (data.contractDocuments !== undefined) {
+        // 기존 문서 연결 해제 (contract-documents repository 사용)
+        await unlinkDocumentsByContractId(tx, contractId);
+
+        // 새 문서 연결 (contract-documents repository 사용)
+        if (data.contractDocuments.length > 0) {
+          await linkDocumentsToContract(tx, contractId, data.contractDocuments);
+        }
+      }
+
       const finalContract = await contractRepository.findById(tx, contractId);
       if (!finalContract) {
-        throw new Error('업데이트 후 계약 정보를 찾을 수 없습니다.');
+        throw new Error(ContractService.ERROR_MESSAGES.TRANSACTION_FAILED);
       }
+
       return finalContract;
     });
-    return ContractMapper.toDetailDto(updatedContractDBResult);
+
+    return ContractMapper.toDetailDto(updatedContract);
+  }
+
+  private async validateUpdateData(
+    data: Partial<UpdateContractDto>,
+    companyId: number,
+  ): Promise<void> {
+    const validationPromises: Promise<void>[] = [];
+
+    if (data.userId) {
+      validationPromises.push(
+        (async () => {
+          const user = await userRepository.findById(data.userId!);
+          if (!user) {
+            throw new NotFoundError(
+              ContractService.ERROR_MESSAGES.USER_NOT_FOUND,
+            );
+          }
+        })(),
+      );
+    }
+
+    if (data.carId) {
+      validationPromises.push(
+        (async () => {
+          const car = await CarRepository.findById({ carId: data.carId! });
+          if (!car) {
+            throw new NotFoundError(
+              ContractService.ERROR_MESSAGES.CAR_NOT_FOUND,
+            );
+          }
+        })(),
+      );
+    }
+
+    if (data.customerId) {
+      validationPromises.push(
+        (async () => {
+          const customer = await customerRepository.findById(
+            data.customerId!,
+            companyId,
+          );
+          if (!customer) {
+            throw new NotFoundError(
+              ContractService.ERROR_MESSAGES.CUSTOMER_NOT_FOUND,
+            );
+          }
+        })(),
+      );
+    }
+
+    await Promise.all(validationPromises);
   }
 
   async getContracts(
@@ -213,8 +456,10 @@ export class ContractService {
       keyword,
     );
 
-    // 상태별로 그룹화
-    const groupedContracts: Record<string, ContractWithRelations[]> = {
+    const initialGroupedContracts: Record<
+      ContractStatus,
+      ContractWithRelations[]
+    > = {
       carInspection: [],
       priceNegotiation: [],
       contractDraft: [],
@@ -222,44 +467,25 @@ export class ContractService {
       contractFailed: [],
     };
 
-    contracts.forEach((contract) => {
-      if (groupedContracts[contract.status]) {
-        groupedContracts[contract.status].push(contract);
+    const groupedContracts = contracts.reduce((acc, contract) => {
+      const status = contract.status as ContractStatus;
+      if (!acc[status]) {
+        acc[status] = [];
       }
-    });
+      acc[status].push(contract);
+      return acc;
+    }, initialGroupedContracts);
 
-    return {
-      carInspection: {
-        totalItemCount: groupedContracts.carInspection.length,
-        data: groupedContracts.carInspection.map((c) =>
-          ContractMapper.toListItemDto(c),
-        ),
-      },
-      priceNegotiation: {
-        totalItemCount: groupedContracts.priceNegotiation.length,
-        data: groupedContracts.priceNegotiation.map((c) =>
-          ContractMapper.toListItemDto(c),
-        ),
-      },
-      contractDraft: {
-        totalItemCount: groupedContracts.contractDraft.length,
-        data: groupedContracts.contractDraft.map((c) =>
-          ContractMapper.toListItemDto(c),
-        ),
-      },
-      contractSuccessful: {
-        totalItemCount: groupedContracts.contractSuccessful.length,
-        data: groupedContracts.contractSuccessful.map((c) =>
-          ContractMapper.toListItemDto(c),
-        ),
-      },
-      contractFailed: {
-        totalItemCount: groupedContracts.contractFailed.length,
-        data: groupedContracts.contractFailed.map((c) =>
-          ContractMapper.toListItemDto(c),
-        ),
-      },
-    };
+    return Object.entries(groupedContracts).reduce(
+      (acc, [status, contractList]) => ({
+        ...acc,
+        [status]: {
+          totalItemCount: contractList.length,
+          data: contractList.map(ContractMapper.toListItemDto),
+        },
+      }),
+      {} as GetContractsResponseDto,
+    );
   }
 
   async deleteContract(
@@ -271,19 +497,30 @@ export class ContractService {
       contractId,
     );
     if (!existingContract) {
-      throw new NotFoundError('존재하지 않는 계약입니다');
+      throw new NotFoundError(
+        ContractService.ERROR_MESSAGES.CONTRACT_NOT_FOUND,
+      );
     }
 
-    // 권한 검증: 담당자만 삭제 가능
     if (existingContract.userId !== requestUserId) {
-      throw new ForbiddenError('담당자만 삭제가 가능합니다');
+      throw new ForbiddenError(ContractService.ERROR_MESSAGES.FORBIDDEN_DELETE);
     }
 
-    await contractRepository.delete(contractId);
+    const resetCarStatus: CarStatus = 'possession';
 
-    return {
-      message: '계약 삭제 성공',
-    };
+    // 💡 차량 상태 업데이트와 계약 삭제를 하나의 트랜잭션으로 묶어 원자성을 보장
+    await prisma.$transaction(async (tx) => {
+      // 1. 차량 상태 업데이트
+      await this.updateCarStatusInTransaction(
+        tx,
+        existingContract.carId,
+        resetCarStatus,
+      );
+      // 2. 계약 삭제
+      await contractRepository.delete(tx, contractId);
+    });
+
+    return { message: '계약 삭제 성공' };
   }
 }
 

@@ -1,11 +1,10 @@
 import { Meeting, Prisma } from '@prisma/client';
-import { TxClient } from '@/features/contracts/contract.type';
-import type { MeetingInput } from '@/features/contracts/contract.type';
+import { TxClient, MeetingDto } from '@/features/contracts/contract.type';
 
 export class MeetingRepository {
   async create(
     tx: TxClient,
-    data: { contractId: number } & Pick<MeetingInput, 'date'>,
+    data: { contractId: number } & Pick<MeetingDto, 'date'>,
   ): Promise<Meeting> {
     return await tx.meeting.create({
       data: {

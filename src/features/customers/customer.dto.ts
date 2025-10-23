@@ -1,12 +1,26 @@
-/**
- * GET /contracts/customers 응답에 사용되는 고객 목록 항목 DTO
- */
-export interface ContractCustomerListItemDto {
+export interface CustomerResponseDto {
   id: number;
-  data: string; // "이름(이메일)" 형식
+  name: string;
+  gender: string;
+  phoneNumber: string;
+  ageGroup: string;
+  region: string;
+  email: string | null;
+  memo: string | null;
+  companyId: number;
+  createdAt: Date;
+  updatedAt: Date;
+  contractCount: number;
 }
 
-/**
- * GET /contracts/customers 최종 응답 DTO
- */
+export interface ContractCustomerListItemDto {
+  id: number;
+  data: string;
+}
+
+export type CreateCustomerResponseDto = CustomerResponseDto;
+export type GetCustomerResponseDto = CustomerResponseDto;
+export type UpdateCustomerResponseDto = CustomerResponseDto;
+export type GetCustomersResponseDto = CustomerResponseDto[];
+
 export type GetContractCustomersResponseDto = ContractCustomerListItemDto[];
