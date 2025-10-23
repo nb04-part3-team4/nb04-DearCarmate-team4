@@ -41,7 +41,7 @@ const getContractDocuments = async ({
 
 const getContractDrafts = async ({ userId }: { userId: number }) => {
   const drafts = await prisma.contract.findMany({
-    where: { userId, status: 'DRAFT' }, // 검증 필요
+    where: { userId, status: 'contractDraft' },
     select: { id: true, contractName: true },
   });
 
