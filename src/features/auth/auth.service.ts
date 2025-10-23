@@ -21,6 +21,7 @@ import type {
   LoginRequestDto,
   GoogleLoginRequestDto,
   GoogleSignupRequestDto,
+  GoogleReauthRequestDto,
 } from '@/features/auth/auth.schema';
 import { OAuth2Client } from 'google-auth-library';
 
@@ -191,6 +192,7 @@ export class AuthService {
         employeeNumber: data.employeeNumber,
         phoneNumber: data.phoneNumber,
         imageUrl: payload.picture || undefined,
+        authProvider: 'google',
         companyId: company.id,
       });
 
@@ -268,6 +270,56 @@ export class AuthService {
         throw new UnauthorizedError('유효하지 않은 리프레시 토큰입니다');
       }
       throw error;
+    }
+  }
+
+  async googleReauth(
+    data: GoogleReauthRequestDto,
+    userId: number,
+  ): Promise<{ verified: boolean; email: string }> {
+    try {
+      // 1. Google 토큰 검증
+      const ticket = await this.googleClient.verifyIdToken({
+        idToken: data.token,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+
+      const payload = ticket.getPayload();
+      if (!payload || !payload.email) {
+        throw new UnauthorizedError('유효하지 않은 Google 토큰입니다');
+      }
+
+      // 2. 현재 로그인한 유저 조회
+      const user = await userRepository.findById(userId);
+      if (!user) {
+        throw new NotFoundError('존재하지 않는 유저입니다');
+      }
+
+      // 3. Google 이메일과 현재 유저 이메일이 일치하는지 확인
+      if (user.email !== payload.email) {
+        throw new UnauthorizedError(
+          '인증된 계정이 현재 사용자와 일치하지 않습니다',
+        );
+      }
+
+      // 4. Google 로그인 사용자인지 확인
+      if (user.authProvider !== 'google') {
+        throw new BadRequestError('Google 로그인 사용자가 아닙니다');
+      }
+
+      return {
+        verified: true,
+        email: payload.email,
+      };
+    } catch (error) {
+      if (
+        error instanceof UnauthorizedError ||
+        error instanceof NotFoundError ||
+        error instanceof BadRequestError
+      ) {
+        throw error;
+      }
+      throw new UnauthorizedError('Google 재인증에 실패했습니다');
     }
   }
 }

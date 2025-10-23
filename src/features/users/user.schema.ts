@@ -18,6 +18,7 @@ export const signupSchema = z
 
 export const updateMeSchema = z
   .object({
+    name: z.string().optional(), // 구글 사용자 전용
     employeeNumber: z.string().optional(),
     phoneNumber: z.string().optional(),
     currentPassword: z.string().optional(),

@@ -6,6 +6,7 @@ export interface UserResponseDto {
   phoneNumber?: string;
   imageUrl?: string;
   isAdmin: boolean;
+  authProvider?: string;
   company: {
     companyName: string;
   };
