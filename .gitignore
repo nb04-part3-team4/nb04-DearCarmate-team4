@@ -50,5 +50,3 @@ temp/
 docker-compose.override.yml
 
 package-lock.json
-
-/src/features/customers

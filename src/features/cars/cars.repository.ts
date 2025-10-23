@@ -8,6 +8,10 @@ import {
 } from '@/features/cars/cars.type.js';
 import { Prisma } from '@prisma/client';
 
+type UpdateCarStatusData = {
+  status: string;
+};
+
 class CarRepository {
   async findById({ carId }: CarId): Promise<CarWithModel | null> {
     return await prisma.car.findUnique({
@@ -82,6 +86,17 @@ class CarRepository {
       },
     });
   }
+async updateInTx(
+    tx: any,
+    carId: number, 
+    data: UpdateCarInput['data'] | UpdateCarStatusData 
+  ): Promise<void> { 
+    await tx.car.update({
+      where: {
+        id: carId,
+      },
+      data,
+    });
+  }
 }
-
 export default new CarRepository();
