@@ -29,7 +29,7 @@ export const contractDocumentResponseSchema = z.object({
       contractName: z.string(),
       resolutionDate: z.date().nullable(),
       documentCount: z.number(),
-      manager: z.string(),
+      userName: z.string(),
       carNumber: z.string(),
       documents: z.array(
         z.object({

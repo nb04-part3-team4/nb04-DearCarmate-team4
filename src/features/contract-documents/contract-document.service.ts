@@ -18,7 +18,7 @@ export const getContractDocuments = async (
     id: contract.id,
     contractName: contract.contractName,
     resolutionDate: contract.resolutionDate,
-    manager: contract.user.name,
+    userName: contract.user.name,
     carNumber: contract.car.carNumber,
     documentCount: contract.documents.length,
     documents: contract.documents,
