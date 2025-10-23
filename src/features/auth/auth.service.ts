@@ -74,6 +74,7 @@ export class AuthService {
         phoneNumber: user.phoneNumber || undefined,
         imageUrl: user.imageUrl || undefined,
         isAdmin: user.isAdmin,
+        authProvider: user.authProvider,
         company: {
           companyName: company.name,
         },
@@ -133,6 +134,7 @@ export class AuthService {
           phoneNumber: user.phoneNumber || undefined,
           imageUrl: user.imageUrl || undefined,
           isAdmin: user.isAdmin,
+          authProvider: user.authProvider,
           company: {
             companyName: company.name,
           },
@@ -217,6 +219,7 @@ export class AuthService {
           phoneNumber: user.phoneNumber || undefined,
           imageUrl: user.imageUrl || undefined,
           isAdmin: user.isAdmin,
+          authProvider: user.authProvider,
           company: {
             companyName: company.name,
           },
