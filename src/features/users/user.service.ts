@@ -105,8 +105,8 @@ export class UserService {
 
     const updateData: UpdateUserInput = {};
 
-    // 구글 사용자는 이름 변경 가능
-    if (isGoogleUser && data.name !== undefined) {
+    // 이름 변경 (모든 사용자 가능)
+    if (data.name !== undefined) {
       updateData.name = data.name;
     }
 
