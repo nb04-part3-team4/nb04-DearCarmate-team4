@@ -75,6 +75,6 @@
     "vitest": "^3.2.4"
   },
   "prisma": {
-    "seed": "tsx scripts/seed/index.ts"
+    "seed": "node dist/scripts/seed/index.js"
   }
 }
