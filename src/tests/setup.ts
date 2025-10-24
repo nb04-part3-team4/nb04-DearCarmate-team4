@@ -4,7 +4,7 @@ import { beforeAll, afterAll, beforeEach } from 'vitest';
 import prisma from '@/shared/middlewares/prisma';
 
 // Load test environment variables
-config({ path: resolve(__dirname, '../../.env.test') });
+config({ path: resolve(__dirname, '../../.env.test'), override: true });
 
 beforeAll(async () => {
   // Connect to test database
