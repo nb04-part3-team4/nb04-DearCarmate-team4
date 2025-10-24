@@ -30,7 +30,7 @@ export const getDashboardData = async (
   const growthRate =
     lastMonthSales === 0
       ? null
-      : ((monthlySales - lastMonthSales) / lastMonthSales) * 100;
+      : (monthlySales - lastMonthSales) / lastMonthSales;
 
   const contractsByCarType = Object.entries(contractsCountByCarType).map(
     ([type, count]) => ({
@@ -42,10 +42,9 @@ export const getDashboardData = async (
   const salesByCarType = Object.entries(salesByCarTypeData).map(
     ([type, sales]) => ({
       carType: type || '기타',
-      count: sales,
+      count: sales / 10000,
     }),
   );
-
   return {
     monthlySales,
     lastMonthSales,
