@@ -481,7 +481,9 @@ export class ContractService {
         ...acc,
         [status]: {
           totalItemCount: contractList.length,
-          data: contractList.map(ContractMapper.toListItemDto),
+          data: contractList.map((contract) =>
+            ContractMapper.toListItemDto(contract),
+          ),
         },
       }),
       {} as GetContractsResponseDto,

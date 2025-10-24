@@ -1,12 +1,14 @@
 import { z } from 'zod';
 import { CONTRACT_STATUSES } from '@/features/contracts/contract.type';
 
-const AlarmSchema = z.string().datetime({
+const AlarmSchema = z.iso.datetime({
+  local: true,
   message: 'Alarm time must be a valid ISO 8601 date-time string.',
 });
 
 const MeetingSchema = z.object({
-  date: z.string().datetime({
+  date: z.iso.datetime({
+    local: true,
     message: 'Meeting date must be a valid ISO 8601 date-time string.',
   }),
   alarms: z.array(AlarmSchema),
