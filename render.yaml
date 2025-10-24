@@ -13,7 +13,7 @@ services:
     runtime: docker
     region: singapore
     plan: free
-    branch: main
+    branch: update/deployment
     dockerfilePath: ./Dockerfile
     healthCheckPath: /health
     envVars:

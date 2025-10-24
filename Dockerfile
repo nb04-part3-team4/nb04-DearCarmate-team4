@@ -35,8 +35,12 @@ RUN npm ci --only=production
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
+# Copy seed scripts
+COPY scripts ./scripts
+
 # Expose port
 EXPOSE 3001
 
-# Run database migrations and start the server
-CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]
+# Run database migrations, seed data (if needed), and start the server
+# Seed will only insert data if it doesn't exist (using upsert in seed files)
+CMD ["sh", "-c", "npx prisma migrate deploy && (npx prisma db seed || true) && npm start"]
