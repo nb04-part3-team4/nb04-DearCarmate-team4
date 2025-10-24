@@ -28,8 +28,8 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install production dependencies only
-RUN npm ci --only=production
+# Install production dependencies + tsx for seed
+RUN npm ci --only=production && npm install tsx
 
 # Copy built files from builder stage
 COPY --from=builder /app/dist ./dist
