@@ -41,6 +41,6 @@ COPY scripts ./scripts
 # Expose port
 EXPOSE 3001
 
-# Run database migrations, seed data (if needed), and start the server
-# Seed will only insert data if it doesn't exist (using upsert in seed files)
-CMD ["sh", "-c", "npx prisma migrate deploy && (npx prisma db seed || true) && npm start"]
+# Run database setup (migrations + seed) and start the server
+# db:setup = npx prisma migrate deploy && npx prisma db seed
+CMD ["sh", "-c", "npm run db:setup && npm start"]
