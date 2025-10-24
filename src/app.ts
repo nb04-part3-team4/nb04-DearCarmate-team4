@@ -23,7 +23,24 @@ const allowedOrigins = process.env.CORS_ORIGINS
   : ['http://localhost:3000'];
 
 const corsOptions = {
-  origin: allowedOrigins,
+  origin: (
+    origin: string | undefined,
+    callback: (err: Error | null, allow?: boolean) => void,
+  ) => {
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    if (origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   optionsSuccessStatus: 200,
 };
