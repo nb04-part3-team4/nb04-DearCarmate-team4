@@ -7,15 +7,14 @@ services:
     databaseUser: project_2
     region: singapore
 
-  # Backend Web Service
+  # Backend Web Service (Docker)
   - type: web
     name: project-2-backend
-    runtime: node
+    runtime: docker
     region: singapore
     plan: free
     branch: main
-    buildCommand: npm install && npx prisma generate && npm run build
-    startCommand: npx prisma migrate deploy && npm start
+    dockerfilePath: ./Dockerfile
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV

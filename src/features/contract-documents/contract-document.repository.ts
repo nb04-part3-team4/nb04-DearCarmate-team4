@@ -1,7 +1,6 @@
 import prisma from '../../shared/middlewares/prisma';
-import { Prisma } from '@prisma/client';
-import type { GetContractDocumentsRequestDto } from './contract-document.dto';
 import type { Prisma } from '@prisma/client';
+import type { GetContractDocumentsRequestDto } from './contract-document.dto';
 
 const getContractDocuments = async ({
   page,
