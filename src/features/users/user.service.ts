@@ -33,6 +33,7 @@ export class UserService {
       phoneNumber: user.phoneNumber || undefined,
       imageUrl: user.imageUrl || undefined,
       isAdmin: user.isAdmin,
+      authProvider: user.authProvider,
       company: {
         companyName: company.name,
       },
@@ -88,7 +89,11 @@ export class UserService {
       throw new NotFoundError('존재하지 않는 유저입니다');
     }
 
-    if (data.currentPassword) {
+    const isGoogleUser = user.authProvider === 'google';
+
+    // 일반 사용자: 현재 비밀번호 확인 필요
+    // 구글 사용자: 현재 비밀번호 확인 불필요 (프론트엔드에서 구글 재인증 처리)
+    if (!isGoogleUser && data.currentPassword) {
       const isPasswordValid = await verifyPassword(
         user.password,
         data.currentPassword,
@@ -100,9 +105,16 @@ export class UserService {
 
     const updateData: UpdateUserInput = {};
 
-    if (data.password) {
+    // 이름 변경 (모든 사용자 가능)
+    if (data.name !== undefined) {
+      updateData.name = data.name;
+    }
+
+    // 비밀번호 변경은 일반 사용자만 가능
+    if (!isGoogleUser && data.password) {
       updateData.password = await hashPassword(data.password);
     }
+
     if (data.employeeNumber !== undefined) {
       updateData.employeeNumber = data.employeeNumber;
     }

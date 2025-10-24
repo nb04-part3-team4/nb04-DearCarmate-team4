@@ -5,8 +5,10 @@ import type {
   UpdateContractBaseData,
   ContractWithRelations,
 } from '@/features/contracts/contract.type';
-import { Prisma } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { contractFullInclude as fullInclude } from '@/features/contracts/contract.type';
+
+type searchByContract = 'customerName' | 'userName';
 
 export class ContractRepository {
   async create(
@@ -44,6 +46,7 @@ export class ContractRepository {
         customer: { connect: { id: data.customerId } },
       }),
       ...(data.carId && { car: { connect: { id: data.carId } } }),
+      ...(data.contractName && { contractName: data.contractName }),
     };
     await tx.contract.update({
       where: { id },
@@ -53,31 +56,45 @@ export class ContractRepository {
 
   async findAllByCompanyId(
     companyId: number,
-    searchBy?: 'customerName' | 'userName',
+    searchBy?: searchByContract,
     keyword?: string,
   ): Promise<ContractWithRelations[]> {
-    const where: Prisma.ContractWhereInput = {
-      companyId,
-      ...(searchBy === 'customerName' && keyword
-        ? { customer: { name: { contains: keyword, mode: 'insensitive' } } }
-        : {}),
-      ...(searchBy === 'userName' && keyword
-        ? { user: { name: { contains: keyword, mode: 'insensitive' } } }
-        : {}),
-    };
+    const where: Prisma.ContractWhereInput = { companyId };
+    if (searchBy && keyword && keyword.trim() !== '') {
+      const searchKeyword = keyword.trim();
 
-    return await prisma.contract.findMany({
+      if (searchBy === 'customerName') {
+        where.customer = {
+          name: {
+            contains: searchKeyword,
+            mode: 'insensitive',
+          },
+        };
+      } else if (searchBy === 'userName') {
+        where.user = {
+          name: {
+            contains: searchKeyword,
+            mode: 'insensitive',
+          },
+        };
+      }
+    }
+    return (await prisma.contract.findMany({
       where,
       include: fullInclude,
       orderBy: {
         createdAt: 'desc',
       },
-    });
+    })) as unknown as Promise<ContractWithRelations[]>;
   }
-
-  async delete(id: number): Promise<void> {
-    await prisma.contract.delete({
-      where: { id },
+  async delete(
+    prisma: PrismaClient | Prisma.TransactionClient,
+    contractId: number,
+  ) {
+    return prisma.contract.delete({
+      where: {
+        id: contractId,
+      },
     });
   }
 }

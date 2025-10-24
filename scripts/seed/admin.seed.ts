@@ -32,6 +32,7 @@ export async function seedAdmin() {
       employeeNumber: 'ADMIN001',
       phoneNumber: '010-0000-0000',
       isAdmin: true,
+      authProvider: 'local',
       companyId: company.id,
     },
   });

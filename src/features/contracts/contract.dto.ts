@@ -1,3 +1,5 @@
+import type { MeetingDto, ContractDocumentDto } from './contract.type';
+
 export interface BaseUserDto {
   id: number;
   name: string;
@@ -13,11 +15,6 @@ export interface BaseCarDto {
   model: string;
 }
 
-export interface MeetingResponseDto {
-  date: string;
-  alarms: string[];
-}
-
 export interface ContractDetailResponseDto {
   id: number;
   status: string;
@@ -26,7 +23,8 @@ export interface ContractDetailResponseDto {
   user: BaseUserDto;
   customer: BaseCustomerDto;
   car: BaseCarDto;
-  meetings: MeetingResponseDto[];
+  meetings: MeetingDto[];
+  contractDocuments?: ContractDocumentDto[];
 }
 
 export interface ContractListItemDto {
@@ -34,7 +32,7 @@ export interface ContractListItemDto {
   car: BaseCarDto;
   customer: BaseCustomerDto;
   user: BaseUserDto;
-  meetings: MeetingResponseDto[];
+  meetings: MeetingDto[];
   contractPrice: number;
   resolutionDate: string | null;
   status: string;

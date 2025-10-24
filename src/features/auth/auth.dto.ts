@@ -8,6 +8,7 @@ export interface LoginResponseDto {
     phoneNumber?: string;
     imageUrl?: string;
     isAdmin: boolean;
+    authProvider: string;
     company: {
       companyName: string;
     };

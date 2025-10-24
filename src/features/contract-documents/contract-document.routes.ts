@@ -23,7 +23,7 @@ router.get(
 router.post(
   '/upload',
   authMiddleware,
-  uploadImage.single('contractDocument'),
+  uploadImage.single('file'),
   contractDocumentController.uploadContractDocument,
 );
 

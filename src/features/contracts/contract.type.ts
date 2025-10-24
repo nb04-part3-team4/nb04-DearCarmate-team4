@@ -1,5 +1,15 @@
 import { Prisma } from '@prisma/client';
 
+export const CONTRACT_STATUSES = [
+  'carInspection',
+  'priceNegotiation',
+  'contractDraft',
+  'contractSuccessful',
+  'contractFailed',
+] as const;
+
+export type ContractStatus = (typeof CONTRACT_STATUSES)[number];
+
 export const contractFullInclude = {
   user: true,
   customer: true,
@@ -11,7 +21,8 @@ export const contractFullInclude = {
   meetings: {
     include: { alarms: true },
   },
-} as const satisfies Prisma.ContractInclude;
+  documents: true,
+} as const;
 
 export type ContractWithRelations = Prisma.ContractGetPayload<{
   include: typeof contractFullInclude;
@@ -28,7 +39,7 @@ export interface CreateContractData {
 
 export interface UpdateContractBaseData {
   status?: string;
-  resolutionDate?: string | null;
+  resolutionDate?: Date | null;
   contractPrice?: number;
   userId?: number;
   customerId?: number;
@@ -36,19 +47,8 @@ export interface UpdateContractBaseData {
   contractName?: string;
 }
 
-export type TxClient = Prisma.TransactionClient;
-
-export const CONTRACT_STATUSES = [
-  'carInspection',
-  'priceNegotiation',
-  'contractDraft',
-  'contractSuccessful',
-  'contractFailed',
-] as const;
-
-export type ContractStatus = (typeof CONTRACT_STATUSES)[number];
-
-export interface MeetingInput {
+// Meeting 타입 (Input과 Response가 동일하므로 하나로 통일)
+export interface MeetingDto {
   date: string;
   alarms: string[];
 }
@@ -57,3 +57,16 @@ export interface AlarmInput {
   meetingId: number;
   alarmTime: string;
 }
+
+// ContractDocument 타입 (Input과 Response가 동일하므로 하나로 통일)
+export interface ContractDocumentDto {
+  id: number;
+  fileName: string;
+}
+
+export type TxClient = Prisma.TransactionClient;
+
+export type CarStatus =
+  | 'possession'
+  | 'contractProceeding'
+  | 'contractCompleted';
