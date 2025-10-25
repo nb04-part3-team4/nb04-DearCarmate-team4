@@ -65,8 +65,3 @@ export interface ContractDocumentDto {
 }
 
 export type TxClient = Prisma.TransactionClient;
-
-export type CarStatus =
-  | 'possession'
-  | 'contractProceeding'
-  | 'contractCompleted';

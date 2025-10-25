@@ -20,7 +20,6 @@ import prisma from '@/shared/middlewares/prisma';
 import {
   ContractStatus,
   ContractWithRelations,
-  CarStatus,
   TxClient,
 } from '@/features/contracts/contract.type';
 import { ContractMapper } from '@/features/contracts/contract.mapper';
@@ -29,6 +28,7 @@ import {
   unlinkDocumentsByContractId,
   linkDocumentsToContract,
 } from '@/features/contract-documents/contract-document.repository';
+import { CarStatus } from '@prisma/client';
 
 export class ContractService {
   private static readonly ERROR_MESSAGES = {
@@ -57,12 +57,12 @@ export class ContractService {
   ): CarStatus {
     switch (contractStatus) {
       case 'contractDraft':
+      case 'carInspection':
+      case 'priceNegotiation':
         return 'contractProceeding';
       case 'contractSuccessful':
         return 'contractCompleted';
       case 'contractFailed':
-      case 'carInspection':
-      case 'priceNegotiation':
       default:
         return 'possession';
     }

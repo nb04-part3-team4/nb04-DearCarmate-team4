@@ -75,6 +75,9 @@ class CarRepository {
   }
   async findAllCarsForContract() {
     return await prisma.car.findMany({
+      where: {
+        status: 'possession',
+      },
       select: {
         id: true,
         carNumber: true,
