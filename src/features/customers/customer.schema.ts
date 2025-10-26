@@ -33,14 +33,14 @@ export const createCustomerSchema = z.object({
     '부산',
     '제주',
   ]),
-  email: z.string().email('올바른 이메일 형식이 아닙니다').optional(),
+  email: z.string().email('올바른 이메일 형식이 아닙니다'),
   memo: z.string().optional(),
 });
 
 export const updateCustomerSchema = z.object({
   name: z.string().min(1, '이름을 입력해주세요').optional(),
   gender: z.enum(['male', 'female']).optional(),
-  phoneNumber: z.string().min(1, '전화번호를 입력해주세요').optional(),
+  phoneNumber: z.string().min(1, '전화번호를 입력해주세요'),
   ageGroup: z
     .enum(['10대', '20대', '30대', '40대', '50대', '60대', '70대', '80대'])
     .optional(),
@@ -65,7 +65,7 @@ export const updateCustomerSchema = z.object({
       '제주',
     ])
     .optional(),
-  email: z.string().email('올바른 이메일 형식이 아닙니다').optional(),
+  email: z.string().email('올바른 이메일 형식이 아닙니다'),
   memo: z.string().optional(),
 });
 
