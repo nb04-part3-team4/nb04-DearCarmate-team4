@@ -35,6 +35,9 @@ RUN npm ci --only=production && npm install tsx
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
+# Copy swagger yaml files (not compiled by TypeScript)
+COPY src/documentation/swagger ./dist/documentation/swagger
+
 # Copy seed scripts
 COPY scripts ./scripts
 
