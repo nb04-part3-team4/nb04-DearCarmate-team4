@@ -46,7 +46,29 @@ const getContractDocuments = async ({
 
   return contracts;
 };
-
+const count = async ({
+  searchBy,
+  keyword,
+  userId,
+}: GetContractDocumentsRequestDto): Promise<number> => {
+  const whereClause: Prisma.ContractWhereInput = {
+    userId,
+    status: 'contractSuccessful',
+    documents: { some: {} },
+  };
+  return await prisma.contract.count({
+    where: {
+      ...whereClause,
+      ...(searchBy && keyword
+        ? {
+            [searchBy]: {
+              contains: keyword,
+            },
+          }
+        : {}),
+    },
+  });
+};
 const getContractDrafts = async ({ userId }: { userId: number }) => {
   const drafts = await prisma.contract.findMany({
     where: { userId, status: 'contractSuccessful', documents: { none: {} } },
@@ -119,4 +141,5 @@ export {
   findContractDocumentById,
   unlinkDocumentsByContractId,
   linkDocumentsToContract,
+  count,
 };
