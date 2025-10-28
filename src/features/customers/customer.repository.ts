@@ -2,7 +2,11 @@
 
 import prisma from '@/shared/middlewares/prisma';
 import { Customer } from '@prisma/client';
-import { CreateCustomerInput, UpdateCustomerInput } from './customer.schema';
+import {
+  CreateCustomerInput,
+  CreateManyInput,
+  UpdateCustomerInput,
+} from './customer.schema';
 
 export type CustomerWithContractCount = Customer & {
   _count: { contracts: number };
@@ -85,6 +89,12 @@ class CustomerRepository {
       orderBy: {
         name: 'asc',
       },
+    });
+  }
+
+  async createMany(data: CreateManyInput[]) {
+    return await prisma.customer.createMany({
+      data,
     });
   }
 }

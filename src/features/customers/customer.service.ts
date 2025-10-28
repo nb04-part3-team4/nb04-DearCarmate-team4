@@ -82,6 +82,14 @@ class CustomerService {
     }
     await customerRepository.delete(id);
   }
+
+  async uploadCustomers(companyId: number, data: CreateCustomerInput[]) {
+    const customersWithCompanyId = data.map((customerData) => ({
+      ...customerData, // 기존 고객 데이터 (name, gender 등)
+      companyId: companyId, // companyId 추가
+    }));
+    await customerRepository.createMany(customersWithCompanyId);
+  }
 }
 
 export const customerService = new CustomerService();

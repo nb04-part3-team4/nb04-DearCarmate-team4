@@ -13,6 +13,16 @@ export interface Customer {
 
 // ---------------------- 요청 DTO (Request) ----------------------
 
+export interface RawCustomerCsvData {
+  name: string;
+  email: string;
+  gender: string;
+  phoneNumber: string;
+  region: string;
+  ageGroup: string;
+  memo: string;
+}
+
 // 고객 생성 요청 본문 타입
 export interface CreateCustomerRequestDto {
   name: string;

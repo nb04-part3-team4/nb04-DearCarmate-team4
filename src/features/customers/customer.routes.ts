@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { customerController } from './customer.controller';
 import { authMiddleware } from '@/shared/middlewares/auth';
+import { uploadCsv } from '@/shared/middlewares/multer.js';
+import { customerCsvParser } from '@/shared/middlewares/customer-csv-parser.js';
 
 const router = Router();
 
@@ -23,6 +25,15 @@ router
   )
   .delete(authMiddleware, (req, res, next) =>
     customerController.deleteCustomer(req, res, next),
+  );
+
+router
+  .route('/upload')
+  .post(
+    authMiddleware,
+    uploadCsv.single('file'),
+    customerCsvParser,
+    customerController.uploadCustomers,
   );
 
 export default router;

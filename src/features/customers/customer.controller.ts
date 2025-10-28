@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { customerService } from './customer.service';
 import { createCustomerSchema, updateCustomerSchema } from './customer.schema';
 import { SuccessResponse } from '@/shared/types/response';
@@ -140,6 +140,21 @@ export class CustomerController {
       next(error);
     }
   }
+
+  uploadCustomers: RequestHandler = async (req, res, next) => {
+    try {
+      requireAuth(req);
+      const customerDatas = req.parsedCustomerCsvData;
+      if (!customerDatas) {
+        throw new BadRequestError('잘못된 요청입니다.');
+      }
+      const { companyId } = req.user;
+      await customerService.uploadCustomers(companyId, customerDatas);
+      return res.status(200).json({ message: '성공적으로 등록되었습니다.' });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export const customerController = new CustomerController();
