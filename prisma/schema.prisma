@@ -99,7 +99,7 @@ model CarModel {
 // 고객
 model Customer {
   id          Int      @id @default(autoincrement())
-  name        String   @unique
+  name        String
   gender      String // male, female
   phoneNumber String   @unique @map("phone_number")
   ageGroup    String   @map("age_group") // 10대, 20대, 30대, 40대, 50대, 60대, 70대, 80대
