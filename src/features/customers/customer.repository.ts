@@ -1,12 +1,10 @@
-// src/features/customers/customer.repository.ts
-
-import { PrismaClient, Customer } from '@prisma/client';
-import { CreateCustomerInput, UpdateCustomerInput } from './customer.dto';
-
-const prisma = new PrismaClient();
 import prisma from '@/shared/middlewares/prisma';
 import { Customer } from '@prisma/client';
 import { CreateCustomerInput, UpdateCustomerInput } from './customer.schema';
+import { CAR_STATUS_VALUES } from '@/features/cars/cars.schema';
+
+type CarStatus = (typeof CAR_STATUS_VALUES)[number];
+const POSSESSION_STATUS = CAR_STATUS_VALUES[0];
 
 export type CustomerWithContractCount = Customer & {
   _count: { contracts: number };
@@ -94,14 +92,18 @@ export class CustomerRepository {
 }
 
 // 고객 생성
-export const createCustomerRepository = async (data: CreateCustomerInput & { companyId: number }): Promise<Customer> => {
+export const createCustomerRepository = async (
+  data: CreateCustomerInput & { companyId: number },
+): Promise<Customer> => {
   return prisma.customer.create({
     data,
   });
 };
 
 // 고객 목록 조회 (검색/페이지네이션 기능은 여기에 추가)
-export const findCustomersRepository = async (companyId: number): Promise<Customer[]> => {
+export const findCustomersRepository = async (
+  companyId: number,
+): Promise<Customer[]> => {
   return prisma.customer.findMany({
     where: { companyId },
     orderBy: { createdAt: 'desc' },
@@ -109,14 +111,21 @@ export const findCustomersRepository = async (companyId: number): Promise<Custom
 };
 
 // 특정 고객 조회
-export const findCustomerByIdRepository = async (id: number, companyId: number): Promise<Customer | null> => {
+export const findCustomerByIdRepository = async (
+  id: number,
+  companyId: number,
+): Promise<Customer | null> => {
   return prisma.customer.findUnique({
     where: { id, companyId },
   });
 };
 
 // 고객 정보 수정
-export const updateCustomerRepository = async (id: number, companyId: number, data: UpdateCustomerInput): Promise<Customer> => {
+export const updateCustomerRepository = async (
+  id: number,
+  companyId: number,
+  data: UpdateCustomerInput,
+): Promise<Customer> => {
   // Prisma는 해당 레코드가 없으면 에러를 던져주므로, 별도 존재 여부 검사는 생략
   return prisma.customer.update({
     where: { id, companyId },
@@ -125,8 +134,33 @@ export const updateCustomerRepository = async (id: number, companyId: number, da
 };
 
 // 고객 삭제
-export const deleteCustomerRepository = async (id: number, companyId: number): Promise<void> => {
-  await prisma.customer.delete({
-    where: { id, companyId },
+export const deleteCustomerRepository = async (
+  id: number,
+  companyId: number,
+): Promise<Customer> => {
+  const deletedCustomer = await prisma.$transaction(async (tx) => {
+    const carsToReset = await tx.contract.findMany({
+      where: { customerId: id },
+      select: { carId: true },
+    });
+
+    const carIds = carsToReset.map((c) => c.carId);
+    if (carIds.length > 0) {
+      await tx.car.updateMany({
+        where: {
+          id: { in: carIds },
+        },
+        data: {
+          status: POSSESSION_STATUS as CarStatus,
+        },
+      });
+    }
+    const customer = await tx.customer.delete({
+      where: { id, companyId },
+    });
+
+    return customer;
   });
+
+  return deletedCustomer;
 };
