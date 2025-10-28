@@ -10,9 +10,6 @@ import { BadRequestError } from '@/shared/middlewares/custom-error';
 export const getContractDocuments = async (
   requestDto: GetContractDocumentsRequestDto,
 ): Promise<ContractDocumentResponseDto> => {
-  const currentPage = 0;
-  const totalPages = 0;
-  const totalItemCount = 0;
   const data = (
     await contractDocumentRepository.getContractDocuments(requestDto)
   ).map((contract) => ({
@@ -24,7 +21,10 @@ export const getContractDocuments = async (
     documentCount: contract.documents.length,
     documents: contract.documents,
   }));
-
+  const totalItemCount = await contractDocumentRepository.count(requestDto);
+  const { page, pageSize } = requestDto;
+  const currentPage = page;
+  const totalPages = Math.ceil(totalItemCount / pageSize);
   const contracts: ContractDocumentResponseDto = {
     currentPage,
     totalPages,

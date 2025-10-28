@@ -34,7 +34,6 @@ const getContractDocuments: RequestHandler = async (req, res, next) => {
     /* if (!documents) {
       return next(new NotFoundError('문서를 찾을 수 없습니다'));
     } */
-
     res.status(200).json(documents);
   } catch (error) {
     next(error);
