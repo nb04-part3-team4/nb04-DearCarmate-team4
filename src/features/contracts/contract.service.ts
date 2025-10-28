@@ -29,6 +29,8 @@ import {
   linkDocumentsToContract,
 } from '@/features/contract-documents/contract-document.repository';
 import { CarStatus } from '@prisma/client';
+import { sendEmailWithAttachment } from '@/shared/middlewares/email';
+import { findContractDocumentById } from '@/features/contract-documents/contract-document.repository';
 
 export class ContractService {
   private static readonly ERROR_MESSAGES = {
@@ -114,7 +116,7 @@ export class ContractService {
       throw new NotFoundError('차량 또는 고객 정보를 찾을 수 없습니다');
     }
 
-    return this._buildContractName(car.modelId, customer.name);
+    return this._buildContractName(car.model.model, customer.name);
   }
 
   async createContract(
@@ -138,7 +140,10 @@ export class ContractService {
       );
     }
 
-    const contractName = this._buildContractName(car.modelId, customer.name);
+    const contractName = this._buildContractName(
+      car.model.model,
+      customer.name,
+    );
 
     const initialContractStatus: ContractStatus = 'carInspection';
     const initialCarStatus = this.mapContractStatusToCarStatus(
@@ -261,6 +266,31 @@ export class ContractService {
             : processedResolutionDate,
       }),
     };
+
+    // Send email with attachments if contractDocuments are updated
+    if (contractDocuments && contractDocuments.length > 0) {
+      const realContractDocuments = await Promise.all(
+        contractDocuments.map(async (doc) => {
+          const document = await findContractDocumentById(doc.id);
+          if (!document) {
+            throw new NotFoundError(
+              `계약 문서를 찾을 수 없습니다 (ID: ${doc.id})`,
+            );
+          }
+          return document;
+        }),
+      );
+
+      await sendEmailWithAttachment(
+        existingContract.customer.email,
+        '계약서 갱신',
+        '계약서가 갱신되었습니다. 첨부된 문서를 확인해주세요.',
+        realContractDocuments.map((doc) => ({
+          filename: `Document_${doc.id}_${doc.fileName}`,
+          path: doc.fileUrl,
+        })),
+      );
+    }
 
     return this.updateFullContract(
       contractId,

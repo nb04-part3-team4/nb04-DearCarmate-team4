@@ -1,9 +1,8 @@
-// src/features/customers/customer.service.ts
-
 import {
   customerRepository,
   CustomerWithContractCount,
-} from './customer.repository';
+  deleteCustomerRepository,
+} from '@/features/customers/customer.repository';
 import { NotFoundError } from '@/shared/middlewares/custom-error';
 import {
   CreateCustomerInput,
@@ -80,7 +79,7 @@ class CustomerService {
     if (!existingCustomer) {
       throw new NotFoundError('고객을 찾을 수 없습니다.');
     }
-    await customerRepository.delete(id);
+    await deleteCustomerRepository(id, companyId);
   }
 
   async uploadCustomers(companyId: number, data: CreateCustomerInput[]) {

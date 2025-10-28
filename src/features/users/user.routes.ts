@@ -28,4 +28,9 @@ router.get('/:userId', authMiddleware, adminGuard, (req, res, next) =>
   userController.getUserById(req, res, next),
 );
 
+// DELETE /users/:userId - 특정 유저 삭제 (인증 + 관리자 권한 필요)
+router.delete('/:userId', authMiddleware, adminGuard, (req, res, next) =>
+  userController.deleteUser(req, res, next),
+);
+
 export default router;

@@ -5,7 +5,7 @@ export const signupSchema = z
     name: z.string().min(1, '이름을 입력해주세요'),
     email: z.string().email('올바른 이메일 형식이 아닙니다'),
     employeeNumber: z.string().min(1, '사원번호를 입력해주세요'),
-    phoneNumber: z.string().optional(),
+    phoneNumber: z.string().min(1, '연락처를 입력해주세요'),
     password: z.string().min(8, '비밀번호는 최소 8자 이상이어야 합니다'),
     passwordConfirmation: z.string().min(1, '비밀번호 확인을 입력해주세요'),
     companyName: z.string().min(1, '회사명을 입력해주세요'),
