@@ -3,8 +3,8 @@ services:
   - type: pserv
     name: project-2-db
     plan: free
-    databaseName: project_2
-    databaseUser: project_2
+    databaseName: project_2_75vz
+    databaseUser: project_2_75vz_user
     region: singapore
 
   # Backend Web Service (Docker)
@@ -13,7 +13,7 @@ services:
     runtime: docker
     region: singapore
     plan: free
-    branch: main
+    branch: update/deployment
     dockerfilePath: ./Dockerfile
     healthCheckPath: /health
     envVars:

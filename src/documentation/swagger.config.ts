@@ -22,7 +22,10 @@ const options: swaggerJsdoc.Options = {
     },
   },
   // Swagger 문서를 생성할 대상 파일들 (라우터, DTO 등)
-  apis: ['./src/documentation/swagger/**/*.yaml'],
+  apis: [
+    './src/documentation/swagger/**/*.yaml',
+    './dist/documentation/swagger/**/*.yaml',
+  ],
 };
 
 export const specs = swaggerJsdoc(options);
