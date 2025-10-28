@@ -3,19 +3,18 @@ services:
   - type: pserv
     name: project-2-db
     plan: free
-    databaseName: project_2
-    databaseUser: project_2
+    databaseName: project_2_75vz
+    databaseUser: project_2_75vz_user
     region: singapore
 
-  # Backend Web Service
+  # Backend Web Service (Docker)
   - type: web
     name: project-2-backend
-    runtime: node
+    runtime: docker
     region: singapore
     plan: free
-    branch: main
-    buildCommand: npm install && npx prisma generate && npm run build
-    startCommand: npx prisma migrate deploy && npm start
+    branch: update/deployment
+    dockerfilePath: ./Dockerfile
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV

@@ -10,7 +10,7 @@ export type CustomerWithContractCount = Customer & {
   _count: { contracts: number };
 };
 
-export class CustomerRepository {
+class CustomerRepository {
   async create(
     companyId: number,
     data: CreateCustomerInput,
@@ -90,7 +90,6 @@ export class CustomerRepository {
     });
   }
 }
-
 // 고객 생성
 export const createCustomerRepository = async (
   data: CreateCustomerInput & { companyId: number },
@@ -164,3 +163,4 @@ export const deleteCustomerRepository = async (
 
   return deletedCustomer;
 };
+export const customerRepository = new CustomerRepository();

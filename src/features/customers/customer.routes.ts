@@ -18,7 +18,7 @@ router
   .get(authMiddleware, (req, res, next) =>
     customerController.getCustomerById(req, res, next),
   )
-  .put(authMiddleware, (req, res, next) =>
+  .patch(authMiddleware, (req, res, next) =>
     customerController.updateCustomer(req, res, next),
   )
   .delete(authMiddleware, (req, res, next) =>

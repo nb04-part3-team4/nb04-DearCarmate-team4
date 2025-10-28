@@ -28,15 +28,22 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install production dependencies only
-RUN npm ci --only=production
+# Install production dependencies + tsx for seed
+RUN npm ci --only=production && npm install tsx
 
 # Copy built files from builder stage
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
+# Copy swagger yaml files (not compiled by TypeScript)
+COPY src/documentation/swagger ./dist/documentation/swagger
+
+# Copy seed scripts
+COPY scripts ./scripts
+
 # Expose port
 EXPOSE 3001
 
-# Run database migrations and start the server
-CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]
+# Run database setup (migrations + seed) and start the server
+# db:setup = npx prisma migrate deploy && npx prisma db seed
+CMD ["sh", "-c", "npm run db:setup && npm start"]
