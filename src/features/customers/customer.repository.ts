@@ -5,7 +5,6 @@ import {
   CreateManyInput,
   UpdateCustomerInput,
 } from './customer.schema';
-import { CreateCustomerInput, UpdateCustomerInput } from './customer.schema';
 import { CAR_STATUS_VALUES } from '@/features/cars/cars.schema';
 
 type CarStatus = (typeof CAR_STATUS_VALUES)[number];
