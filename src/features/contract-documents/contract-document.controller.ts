@@ -95,10 +95,12 @@ const downloadContractDocument: RequestHandler = async (req, res, next) => {
       return next(new NotFoundError('파일을 찾을 수 없습니다'));
     }
 
-    return res
-      .status(200)
-      .json({ message: '계약서 다운로드 성공' })
-      .download(document.fileUrl, document.fileName);
+    return (
+      res
+        .status(200)
+        // .json({ message: '계약서 다운로드 성공' })
+        .download(document.fileUrl, document.fileName)
+    );
   } catch (error) {
     next(error);
   }
