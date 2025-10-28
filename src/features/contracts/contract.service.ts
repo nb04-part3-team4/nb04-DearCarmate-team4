@@ -116,7 +116,7 @@ export class ContractService {
       throw new NotFoundError('차량 또는 고객 정보를 찾을 수 없습니다');
     }
 
-    return this._buildContractName(car.modelId, customer.name);
+    return this._buildContractName(car.model.model, customer.name);
   }
 
   async createContract(
@@ -140,7 +140,10 @@ export class ContractService {
       );
     }
 
-    const contractName = this._buildContractName(car.modelId, customer.name);
+    const contractName = this._buildContractName(
+      car.model.model,
+      customer.name,
+    );
 
     const initialContractStatus: ContractStatus = 'carInspection';
     const initialCarStatus = this.mapContractStatusToCarStatus(
