@@ -132,12 +132,33 @@ export const deleteCustomerRepository = async (
   companyId: number,
 ): Promise<Customer> => {
   const deletedCustomer = await prisma.$transaction(async (tx) => {
-    const carsToReset = await tx.contract.findMany({
+    // 1. 고객의 계약서 조회
+    const contracts = await tx.contract.findMany({
       where: { customerId: id },
-      select: { carId: true },
+      select: { id: true, carId: true },
     });
 
-    const carIds = carsToReset.map((c) => c.carId);
+    const carIds = contracts.map((c) => c.carId);
+    const contractIds = contracts.map((c) => c.id);
+
+    // 2. 계약서 관련 문서 삭제
+    if (contractIds.length > 0) {
+      await tx.contractDocument.deleteMany({
+        where: { contractId: { in: contractIds } },
+      });
+
+      // 3. 계약서 관련 미팅 삭제
+      await tx.meeting.deleteMany({
+        where: { contractId: { in: contractIds } },
+      });
+
+      // 4. 계약서 삭제
+      await tx.contract.deleteMany({
+        where: { id: { in: contractIds } },
+      });
+    }
+
+    // 5. 차량 상태 원복
     if (carIds.length > 0) {
       await tx.car.updateMany({
         where: {
@@ -148,6 +169,8 @@ export const deleteCustomerRepository = async (
         },
       });
     }
+
+    // 6. 고객 삭제
     const customer = await tx.customer.delete({
       where: { id, companyId },
     });
