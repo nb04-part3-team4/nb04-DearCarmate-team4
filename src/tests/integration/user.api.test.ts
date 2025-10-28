@@ -64,6 +64,7 @@ describe('User API (E2E)', () => {
         passwordConfirmation: 'password123',
         name: 'Invalid User',
         employeeNumber: 'EMPINV001',
+        phoneNumber: '010-1234-5678',
         companyName: 'Invalid Company',
         companyCode: 'INVALID',
       });
@@ -79,6 +80,7 @@ describe('User API (E2E)', () => {
         passwordConfirmation: 'password123',
         name: 'Duplicate User',
         employeeNumber: 'EMPDUP001',
+        phoneNumber: '010-1234-5678',
         companyName: 'User API Test Company',
         companyCode: companyCode,
       });
