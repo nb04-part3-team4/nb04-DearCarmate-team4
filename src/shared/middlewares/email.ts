@@ -22,6 +22,12 @@ export const sendEmailWithAttachment = async (
   attachments: EmailAttachment[],
 ) => {
   try {
+    // 이메일 설정이 없으면 스킵
+    if (!process.env.EMAIL_HOST || !process.env.EMAIL_USER) {
+      console.log('📧 Email configuration not found. Skipping email send.');
+      return;
+    }
+
     const mailOptions: nodemailer.SendMailOptions = {
       from: process.env.EMAIL_FROM,
       to,
@@ -31,9 +37,10 @@ export const sendEmailWithAttachment = async (
     };
 
     await transporter.sendMail(mailOptions);
-    console.log(`Email sent to ${to}`);
+    console.log(`✅ Email successfully sent to ${to}`);
   } catch (error) {
-    console.error('Error sending email:', error);
-    throw new Error('Email could not be sent');
+    console.error('❌ Error sending email:', error);
+    // 이메일 전송 실패는 에러를 던지지 않음 (계약서 업데이트는 성공)
+    console.log('⚠️  Email sending failed, but continuing with the operation.');
   }
 };
