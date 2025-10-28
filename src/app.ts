@@ -39,6 +39,11 @@ const corsOptions = {
       return callback(null, true);
     }
 
+    
+    if (origin.endsWith('.onrender.com')) {
+      return callback(null, true);
+    }
+
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,

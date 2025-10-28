@@ -157,6 +157,16 @@ export class UserService {
 
     await userRepository.delete(userId);
   }
+
+  async deleteUser(userId: number): Promise<void> {
+    const user = await userRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundError('존재하지 않는 유저입니다');
+    }
+
+    await userRepository.delete(userId);
+  }
+
   async getUsersForContract(): Promise<GetContractUsersResponseDto> {
     const users = await userRepository.findAllUsersForContract();
 

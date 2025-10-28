@@ -112,6 +112,25 @@ export class UserController {
       next(error);
     }
   }
+
+  async deleteUser(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const userId = parseInt(req.params.userId, 10);
+      if (isNaN(userId)) {
+        throw new BadRequestError('잘못된 요청입니다');
+      }
+
+      await userService.deleteUser(userId);
+
+      res.status(200).json({ message: '유저 삭제 성공' });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const userController = new UserController();
