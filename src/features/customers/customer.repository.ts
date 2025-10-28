@@ -1,5 +1,10 @@
 import prisma from '@/shared/middlewares/prisma';
 import { Customer } from '@prisma/client';
+import {
+  CreateCustomerInput,
+  CreateManyInput,
+  UpdateCustomerInput,
+} from './customer.schema';
 import { CreateCustomerInput, UpdateCustomerInput } from './customer.schema';
 import { CAR_STATUS_VALUES } from '@/features/cars/cars.schema';
 
@@ -81,6 +86,12 @@ class CustomerRepository {
       orderBy: {
         name: 'asc',
       },
+    });
+  }
+
+  async createMany(data: CreateManyInput[]) {
+    return await prisma.customer.createMany({
+      data,
     });
   }
 }

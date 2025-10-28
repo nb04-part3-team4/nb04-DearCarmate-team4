@@ -71,3 +71,7 @@ export const updateCustomerSchema = z.object({
 
 export type CreateCustomerInput = z.infer<typeof createCustomerSchema>;
 export type UpdateCustomerInput = z.infer<typeof updateCustomerSchema>;
+
+export type CreateManyInput = CreateCustomerInput & {
+  companyId: number;
+};

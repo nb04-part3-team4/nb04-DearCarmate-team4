@@ -1,5 +1,6 @@
 import { JwtPayload } from '@/middlewares/jwt';
 import { BaseCarDto } from './cars.type.js';
+import { CreateCustomerInput } from '@/features/customers/customer.schema.js';
 
 declare global {
   namespace Express {
@@ -10,6 +11,7 @@ declare global {
         | Express.Multer.File[]
         | { [fieldname: string]: Express.Multer.File[] };
       parsedCsvData?: BaseCarDto[];
+      parsedCustomerCsvData?: CreateCustomerInput[];
     }
   }
 }
