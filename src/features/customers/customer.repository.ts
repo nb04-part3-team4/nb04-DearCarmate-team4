@@ -71,12 +71,6 @@ class CustomerRepository {
     });
   }
 
-  async delete(id: number): Promise<Customer> {
-    return await prisma.customer.delete({
-      where: { id },
-    });
-  }
-
   async findAllForContract(companyId: number) {
     return await prisma.customer.findMany({
       where: { companyId },
