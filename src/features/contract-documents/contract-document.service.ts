@@ -6,6 +6,7 @@ import {
   type ContractDocumentResponseDto,
 } from './contract-document.dto';
 import { BadRequestError } from '@/shared/middlewares/custom-error';
+import imagesService from '../images/images.service.js';
 
 export const getContractDocuments = async (
   requestDto: GetContractDocumentsRequestDto,
@@ -50,9 +51,10 @@ export const getContractDrafts = async ({
 export const uploadContractDocument = async (
   file: Express.Multer.File,
 ): Promise<UploadContractDocumentResponseDto> => {
+  const { imageUrl } = await imagesService.postImage({ path: file.path });
   const uploadedDocument =
     await contractDocumentRepository.uploadContractDocument({
-      fileUrl: file.path,
+      fileUrl: imageUrl,
       fileName: file.originalname,
       fileSize: file.size,
     });
